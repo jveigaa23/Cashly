@@ -16,8 +16,12 @@ async function NewBill() {
     <BillForm
       action={createBillAction}
       categories={categories}
-      initial={{ name: "", amount: "", dueDate: todayFor(membership), categoryId: "", description: "" }}
+      initial={{
+        name: "", amount: "", dueDate: todayFor(membership), categoryId: "", description: "",
+        finePercent: "", interestRate: "", interestPeriod: "", interestBasis: "original",
+      }}
       submitLabel="Salvar conta"
+      allowRepeat
     />
   );
 }
@@ -25,7 +29,7 @@ async function NewBill() {
 export default function NewBillPage() {
   return (
     <>
-      <PageHeader title="Nova conta a pagar" description="Contas recorrentes e juros/multa chegam na próxima etapa." />
+      <PageHeader title="Nova conta a pagar" description="Contas que se repetem todo mês podem ser cadastradas uma vez só." />
       <Card>
         <Suspense fallback={<p className="text-muted">Carregando…</p>}>
           <NewBill />

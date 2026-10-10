@@ -41,6 +41,14 @@ const RPC_MESSAGES: Record<string, string> = {
   use_cancel_function: "Use o botão “Cancelar lançamento”.",
   category_kind_mismatch: "Escolha uma categoria do tipo certo (receita ou despesa).",
   amount_below_paid: "O valor da conta não pode ficar menor que o total já pago.",
+  invalid_rate: "Taxa inválida. Use um percentual entre 0 e 100.",
+  invalid_count: "Número de parcelas inválido.",
+  invalid_method: "Forma de juros inválida.",
+  invalid_recurrence: "Dados da repetição inválidos.",
+  invalid_date: "Data inválida.",
+  plan_canceled: "Este parcelamento foi cancelado.",
+  plan_has_payments: "Este parcelamento tem pagamentos registrados. Cancele os pagamentos antes.",
+  installment_already_paid: "Esta parcela já está paga.",
 };
 
 /** Funções do banco sinalizam erros conhecidos pela mensagem (ex.: 'invite_invalid'). */

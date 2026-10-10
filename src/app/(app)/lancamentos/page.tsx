@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { TRANSACTION_STATUS_LABEL } from "@/domain/transactions";
 import { cn } from "@/lib/cn";
 import { addMonths, formatCalendarDate, formatMonthYear } from "@/lib/format/date";
-import { listCategories, listTransactions } from "@/server/finance/queries";
+import { ensureRecurrences, listCategories, listTransactions } from "@/server/finance/queries";
 import { requireMember, todayFor } from "@/server/session";
 
 export const metadata: Metadata = { title: "Lançamentos" };
@@ -32,6 +32,7 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
   const q = typeof params.busca === "string" ? params.busca.slice(0, 80) : "";
   const categoryId = typeof params.categoria === "string" && /^[0-9a-f-]{36}$/i.test(params.categoria) ? params.categoria : undefined;
 
+  const generated = await ensureRecurrences();
   const [{ items, totals, truncated }, incomeCats, expenseCats] = await Promise.all([
     listTransactions({ month, type, categoryId, q }),
     listCategories("income"),
@@ -47,7 +48,18 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
 
   return (
     <>
-      {typeof params.salvo === "string" ? <Notice tone="success" role="status" title="Lançamento salvo." className="mb-4" /> : null}
+      {params.salvo === "recorrente" ? (
+        <Notice tone="success" role="status" title="Lançamento mensal cadastrado." className="mb-4">
+          Ele aparece todo mês como previsto. Quando acontecer, abra e marque como recebido/pago.
+        </Notice>
+      ) : typeof params.salvo === "string" ? (
+        <Notice tone="success" role="status" title="Lançamento salvo." className="mb-4" />
+      ) : null}
+      {!generated.ok ? (
+        <Notice tone="warning" role="alert" title="Não foi possível criar os lançamentos repetidos agora." className="mb-4">
+          Os lançamentos já cadastrados estão corretos. Tente de novo em instantes.
+        </Notice>
+      ) : null}
 
       <nav aria-label="Mês" className="mb-4 flex items-center justify-between gap-2">
         <Link href={href({ mes: addMonths(month, -1) })} className={buttonClasses({ variant: "secondary" })} aria-label="Mês anterior">

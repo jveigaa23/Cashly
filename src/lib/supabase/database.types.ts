@@ -500,6 +500,7 @@ export type Database = {
           interest_method: string
           interest_rate: number
           kind: string
+          request_id: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -518,6 +519,7 @@ export type Database = {
           interest_method?: string
           interest_rate?: number
           kind: string
+          request_id?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -536,6 +538,7 @@ export type Database = {
           interest_method?: string
           interest_rate?: number
           kind?: string
+          request_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -796,6 +799,7 @@ export type Database = {
           household_id: string
           id: string
           interval_count: number
+          request_id: string | null
           starts_on: string
           target: string
           template: Json
@@ -811,6 +815,7 @@ export type Database = {
           household_id: string
           id?: string
           interval_count?: number
+          request_id?: string | null
           starts_on: string
           target: string
           template?: Json
@@ -826,6 +831,7 @@ export type Database = {
           household_id?: string
           id?: string
           interval_count?: number
+          request_id?: string | null
           starts_on?: string
           target?: string
           template?: Json
@@ -966,6 +972,10 @@ export type Database = {
         Args: { p_bill_id: string; p_reason: string }
         Returns: undefined
       }
+      cancel_installment_plan: {
+        Args: { p_plan_id: string; p_reason: string }
+        Returns: undefined
+      }
       cancel_bill_payment: {
         Args: { p_payment_id: string; p_reason: string }
         Returns: undefined
@@ -975,6 +985,34 @@ export type Database = {
         Returns: undefined
       }
       create_household_invite: { Args: { p_email: string }; Returns: string }
+      create_installment_plan: {
+        Args: {
+          p_category_id: string | null
+          p_count: number
+          p_description: string
+          p_first_due: string
+          p_kind: string
+          p_method: string
+          p_rate?: number
+          p_request_id?: string
+          p_total: number
+        }
+        Returns: string
+      }
+      create_recurrence: {
+        Args: {
+          p_day_of_month: number | null
+          p_ends_on: string | null
+          p_frequency: string
+          p_interval: number
+          p_request_id?: string
+          p_starts_on: string
+          p_target: string
+          p_template: Json
+        }
+        Returns: string
+      }
+      generate_recurrences: { Args: never; Returns: number }
       register_bill_payment: {
         Args: {
           p_account_id?: string
@@ -988,10 +1026,24 @@ export type Database = {
         }
         Returns: string
       }
+      register_installment_payment: {
+        Args: {
+          p_account_id?: string
+          p_amount: number
+          p_charges_amount?: number
+          p_installment_id: string
+          p_note?: string
+          p_paid_on: string
+          p_payment_method?: string
+          p_request_id?: string
+        }
+        Returns: string
+      }
       revoke_household_invite: {
         Args: { p_invite_id: string }
         Returns: undefined
       }
+      stop_recurrence: { Args: { p_rule_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

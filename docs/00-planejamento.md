@@ -191,7 +191,7 @@ arquivos alterados, decisões e próximos passos.
   cria `bill_payments` + `transactions` vinculada (sem dupla contagem).
 - Histórico (`audit_log`), filtros, busca, ordenação.
 
-### Fase 4 — Juros, multas, recorrências e parcelas
+### Fase 4 — Juros, multas, recorrências e parcelas — concluída (ver docs/regras-financeiras.md)
 - `domain/charges`: juros simples diários/mensais, multa única, base de
   cálculo, interrupção na quitação, pagamentos parciais, arredondamento.
 - `domain/installments`: geração idempotente, resíduo de centavos na última

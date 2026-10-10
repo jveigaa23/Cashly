@@ -13,7 +13,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCalendarDate } from "@/lib/format/date";
-import { cancelBillAction, cancelPaymentAction, payBillAction } from "@/server/finance/actions";
+import { describeRule } from "@/domain/recurrence";
+import { cancelBillAction, cancelPaymentAction, payBillAction, stopRecurrenceAction } from "@/server/finance/actions";
 import { getBill, getHistory, listAccounts } from "@/server/finance/queries";
 import { requireMember, todayFor } from "@/server/session";
 
@@ -37,7 +38,13 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
     <>
       <Flash
         params={query}
-        messages={{ pago: "Pagamento registrado.", salvo: "Conta salva.", cancelada: "Conta cancelada.", "pagamento-cancelado": "Pagamento cancelado." }}
+        messages={{
+          pago: "Pagamento registrado.",
+          salvo: "Conta salva.",
+          cancelada: "Conta cancelada.",
+          "pagamento-cancelado": "Pagamento cancelado.",
+          "repeticao-encerrada": "Repetição encerrada. As próximas contas ainda não pagas foram canceladas.",
+        }}
       />
       <div className="mb-5">
         <Link href="/contas" className="font-semibold text-primary underline underline-offset-4">
@@ -72,8 +79,8 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
           </dl>
           {s.daysOverdue > 0 ? (
             <p className="mt-3 font-semibold text-danger">
-              Vencida há {s.daysOverdue} {s.daysOverdue === 1 ? "dia" : "dias"}. Juros e multa podem ser cobrados pelo credor;
-              a estimativa chega na próxima etapa do Cashly.
+              Vencida há {s.daysOverdue} {s.daysOverdue === 1 ? "dia" : "dias"}.
+              {bill.chargeRules ? "" : " Juros e multa não foram configurados nesta conta; o credor pode cobrá-los."}
             </p>
           ) : null}
           {bill.description ? <p className="mt-3 text-muted">{bill.description}</p> : null}
@@ -82,11 +89,40 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
           ) : null}
         </Card>
 
+        {bill.charges && bill.charges.totalChargesCents > 0 ? (
+          <Card aria-labelledby="encargos">
+            <CardTitle id="encargos">Encargos estimados até hoje</CardTitle>
+            <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-lg">
+              <dt>Multa</dt>
+              <dd className="text-right"><Money cents={bill.charges.fineCents} /></dd>
+              <dt>Juros ({bill.charges.daysLate} {bill.charges.daysLate === 1 ? "dia" : "dias"})</dt>
+              <dd className="text-right"><Money cents={bill.charges.interestCents} /></dd>
+              {bill.charges.chargesPaidCents > 0 ? (
+                <>
+                  <dt>Encargos já pagos</dt>
+                  <dd className="text-right">− <Money cents={bill.charges.chargesPaidCents} /></dd>
+                </>
+              ) : null}
+              <dt className="font-bold">Total estimado a pagar hoje</dt>
+              <dd className="text-right font-bold"><Money cents={bill.status === "canceled" ? 0 : bill.charges.totalDueCents} /></dd>
+            </dl>
+            <p className="mt-3 text-sm text-muted">
+              Estimativa feita pelo Cashly com as regras cadastradas. O valor oficial é o do boleto, contrato ou credor.
+            </p>
+          </Card>
+        ) : null}
+
         {canPay ? (
           <Card aria-labelledby="pagar">
             <CardTitle id="pagar">Registrar pagamento</CardTitle>
             <div className="mt-3">
-              <PaymentForm action={payBillAction.bind(null, bill.id)} outstandingCents={s.outstandingCents} today={today} accounts={accounts} />
+              <PaymentForm
+                action={payBillAction.bind(null, bill.id)}
+                outstandingCents={s.outstandingCents}
+                estimatedChargesCents={bill.charges?.chargesOutstandingCents ?? 0}
+                today={today}
+                accounts={accounts}
+              />
             </div>
           </Card>
         ) : null}
@@ -126,6 +162,28 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
             </ul>
           )}
         </Card>
+
+        {bill.recurrence ? (
+          <Card aria-labelledby="repeticao">
+            <CardTitle id="repeticao">Repetição</CardTitle>
+            <p className="mt-2">
+              {bill.recurrence.active ? describeRule(bill.recurrence) : "Repetição encerrada."}
+              {bill.recurrence.active && bill.recurrence.endsOn ? ` até ${formatCalendarDate(bill.recurrence.endsOn)}` : ""}
+            </p>
+            {bill.recurrence.active ? (
+              <div className="mt-3">
+                <ConfirmAction
+                  action={stopRecurrenceAction.bind(null, bill.id, bill.recurrence.id)}
+                  triggerLabel="Parar de repetir"
+                  title="Parar de repetir esta conta?"
+                  description="Não serão criadas novas contas. As próximas que ainda não venceram e não têm pagamento serão canceladas. As já pagas ficam no histórico."
+                  confirmLabel="Sim, parar de repetir"
+                  withReason={false}
+                />
+              </div>
+            ) : null}
+          </Card>
+        ) : null}
 
         {bill.status !== "canceled" ? (
           <Card aria-labelledby="acoes">

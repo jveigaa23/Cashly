@@ -7,11 +7,17 @@ import { LoadingCard } from "@/components/layout/loading-card";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { formatAmountInput, formatBRL } from "@/lib/format/money";
+import { formatRate, parseRate } from "@/domain/rates";
 import { updateBillAction } from "@/server/finance/actions";
 import { getBill, listCategories } from "@/server/finance/queries";
 import { requireMember, todayFor } from "@/server/session";
 
 export const metadata: Metadata = { title: "Editar conta" };
+
+function rateInput(value: string): string {
+  const micro = parseRate(value) ?? 0n;
+  return micro === 0n ? "" : formatRate(micro);
+}
 
 async function EditBill({ params }: { params: PageProps<"/contas/[id]/editar">["params"] }) {
   const { id } = await params;
@@ -32,6 +38,11 @@ async function EditBill({ params }: { params: PageProps<"/contas/[id]/editar">["
         <Notice tone="warning" title="Conta cancelada">Contas canceladas não podem ser alteradas.</Notice>
       ) : (
         <Card>
+          {bill.recurrence ? (
+            <Notice title="Conta que se repete" className="mb-4">
+              A alteração vale só para esta conta. As próximas seguem o cadastro da repetição.
+            </Notice>
+          ) : null}
           {bill.summary.paidPrincipalCents > 0 ? (
             <Notice title="Esta conta já tem pagamentos" className="mb-4">
               O valor não pode ficar abaixo do já pago ({formatBRL(bill.summary.paidPrincipalCents)}).
@@ -46,6 +57,10 @@ async function EditBill({ params }: { params: PageProps<"/contas/[id]/editar">["
               dueDate: bill.dueDate,
               categoryId: bill.categoryId ?? "",
               description: bill.description ?? "",
+              finePercent: rateInput(bill.finePercent),
+              interestRate: rateInput(bill.interestRate),
+              interestPeriod: bill.interestPeriod ?? "",
+              interestBasis: bill.interestBasis,
             }}
             submitLabel="Salvar alterações"
           />

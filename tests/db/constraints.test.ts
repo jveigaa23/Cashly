@@ -96,7 +96,7 @@ describe("integridade financeira no banco", () => {
 
   it("recorrência não gera duplicata para a mesma data", async () => {
     const rule = (
-      await run(
+      await raw(
         "insert into recurrence_rules (household_id, target, frequency, day_of_month, starts_on) values ($1, 'bill', 'monthly', 31, '2026-01-31') returning id",
         [household],
       )
@@ -108,14 +108,14 @@ describe("integridade financeira no banco", () => {
 
   it("parcelas: número único por plano", async () => {
     const plan = (
-      await run(
+      await raw(
         "insert into installment_plans (household_id, kind, description, total_amount, installment_count, first_due_date) values ($1, 'purchase', 'Geladeira', 3000, 10, '2026-11-05') returning id",
         [household],
       )
     ).rows[0].id;
     const insert = "insert into installments (household_id, plan_id, number, due_date, expected_amount) values ($1, $2, 1, '2026-11-05', 300)";
-    await run(insert, [household, plan]);
-    await expect(run(insert, [household, plan])).rejects.toThrow(/unique/);
+    await raw(insert, [household, plan]);
+    await expect(raw(insert, [household, plan])).rejects.toThrow(/unique/);
   });
 
   it("orçamento: mês começa no dia 1, só categoria de despesa, um por categoria/mês", async () => {

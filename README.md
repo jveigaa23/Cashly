@@ -17,7 +17,7 @@ utilizável também no computador.
 | 1 | Fundação, identidade visual e PWA | Concluída |
 | 2 | Banco de dados, autenticação e segurança (Supabase) | Concluída — pendências de configuração abaixo |
 | 3 | Contas, despesas, receitas e pagamentos manuais | Concluída |
-| 4 | Juros, multas, recorrências e parcelas | Pendente |
+| 4 | Juros, multas, recorrências e parcelas | Concluída |
 | 5 | Dashboard, orçamento, gráficos e relatórios | Pendente |
 | 6 | Notificações internas, push e WhatsApp (opcional) | Pendente |
 | 7 | Testes de integração, E2E, segurança, acessibilidade | Pendente |
@@ -26,8 +26,9 @@ utilizável também no computador.
 **Ainda não está pronto para uso real.** Já funcionam: login, família,
 convites, contas a pagar (com pagamentos parciais, encargos pagos,
 cancelamentos e histórico) e lançamentos de receitas e despesas (realizados e
-previstos). Juros/multas estimados, recorrências e parcelas chegam na Fase 4;
-painel e relatórios na Fase 5. Telas ainda não implementadas informam a fase e
+previstos), juros e multas estimados, contas e lançamentos que se repetem e
+parcelamentos (com juros simples opcionais). Painel e relatórios chegam na
+Fase 5. Telas ainda não implementadas informam a fase e
 não exibem dados simulados.
 
 Pendências para uso real (ver [docs/supabase.md](docs/supabase.md)):
@@ -78,6 +79,7 @@ pnpm build && pnpm start
 - [Planejamento (Fase 0)](docs/00-planejamento.md): riscos, modelo de dados, plano por fases, variáveis e serviços externos.
 - [Arquitetura](docs/arquitetura.md): estrutura, convenções de dinheiro e datas, decisões.
 - [PWA](docs/pwa.md): manifest, Service Worker, atualização, instalação e limites offline.
+- [Regras financeiras](docs/regras-financeiras.md): situação das contas, pagamentos, multa e juros, parcelas, recorrências e arredondamento.
 - [Supabase](docs/supabase.md): migrações, modelo de segurança, testes do banco, configuração de autenticação, backup.
 
 ## Limitações conhecidas
@@ -93,7 +95,10 @@ pnpm build && pnpm start
   PostgREST/GoTrue na primeira execução.
 - Uma página inexistente dentro do app (ex.: conta de outra família) mostra
   “Página não encontrada”, mas com status HTTP 200 por causa do streaming.
-- Contas recorrentes, juros/multas estimados e parcelas: Fase 4.
+- Juros compostos (tabela Price) e ajuste de vencimento para dia útil não
+  são calculados; as estimativas de encargos não são valores oficiais.
+- Repetições semanais não existem (só mensal e anual); editar a regra de uma
+  repetição exige parar e cadastrar de novo.
 - Categorias e contas bancárias de registro ainda não podem ser editadas pela
   interface (usam o cadastro inicial).
 - Uso offline limitado a uma página informativa; nada é salvo sem conexão.

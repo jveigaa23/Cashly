@@ -18,6 +18,7 @@ Versionadas em `supabase/migrations/` e aplicadas em ordem:
 | `20261010160000_households.sql` | Famílias, membros, convites, funções de autorização (`private.*`), RPCs |
 | `20261010160100_financial_schema.sql` | Contas, categorias, recorrências, contas a pagar, parcelas, pagamentos, lançamentos, orçamentos + RLS |
 | `20261010160200_notifications_audit.sql` | Preferências e entregas de avisos, inscrições push, histórico de alterações |
+| `20261010200000_recurrence_installments.sql` | Fase 4: recorrências (geração idempotente), parcelamentos, pagamento de parcelas |
 | `20261010180000_bills_payments_rules.sql` | Fase 3: pagamentos e cancelamentos atômicos (RPC), status protegidos, idempotência (`request_id`), tipo de categoria |
 
 Como aplicar em um projeto novo: SQL Editor do painel (colar cada arquivo em
@@ -26,7 +27,7 @@ ordem) ou `supabase db push` com a CLI ligada ao projeto.
 **Conferir que o banco remoto é igual às migrações**: rode
 `supabase/tests/schema-fingerprint.sql` no SQL Editor e no banco local de
 teste; os hashes devem coincidir. (Conferido em 10/10/2026 após a migração
-0004: idênticos.)
+0005: idênticos.)
 
 Após cada migração, regenere `src/lib/supabase/database.types.ts`.
 

@@ -88,6 +88,10 @@ tests/e2e/               Playwright
   pagamento. `today` sempre injetado.
 - `src/domain/transactions.ts`: totais separando realizado e previsto,
   ignorando cancelados.
+- `src/domain/charges.ts`, `rates.ts`: multa e juros estimados (BigInt).
+- `src/domain/installments.ts`, `recurrence.ts`: cronogramas e datas, com
+  equivalentes SQL testados lado a lado. Regras em
+  [regras-financeiras.md](regras-financeiras.md).
 - O banco aplica as mesmas regras nas funções; a interface valida antes para
   dar mensagens claras (inclusive na etapa de revisão do pagamento).
 - `src/server/finance/queries.ts`: leituras com `::text` nos NUMERIC (sem float).

@@ -11,7 +11,7 @@ import { BillIcon, PlusIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
 import { cn } from "@/lib/cn";
 import { formatCalendarDate } from "@/lib/format/date";
-import { listBills, type BillSort, type BillView } from "@/server/finance/queries";
+import { ensureRecurrences, listBills, type BillSort, type BillView } from "@/server/finance/queries";
 import { requireMember, todayFor } from "@/server/session";
 
 export const metadata: Metadata = { title: "Contas a pagar" };
@@ -40,6 +40,7 @@ async function BillsList({ searchParams }: { searchParams: PageProps<"/contas">[
   const q = typeof params.busca === "string" ? params.busca.slice(0, 80) : "";
   const membership = await requireMember();
   const today = todayFor(membership);
+  const generated = await ensureRecurrences();
   const { items, truncated } = await listBills({ view, q, sort }, today);
 
   const totalOpen = items.filter((b) => b.status !== "canceled").reduce((s, b) => s + b.summary.outstandingCents, 0);
@@ -52,6 +53,16 @@ async function BillsList({ searchParams }: { searchParams: PageProps<"/contas">[
 
   return (
     <>
+      {params.recorrente !== undefined ? (
+        <Notice tone="success" role="status" title="Conta repetida cadastrada." className="mb-4">
+          As contas até o próximo mês já aparecem na lista. As seguintes surgem automaticamente.
+        </Notice>
+      ) : null}
+      {!generated.ok ? (
+        <Notice tone="warning" role="alert" title="Não foi possível criar as próximas contas repetidas agora." className="mb-4">
+          As contas já cadastradas estão corretas. Tente abrir esta tela de novo em instantes.
+        </Notice>
+      ) : null}
       <nav aria-label="Filtrar contas" className="-mx-4 mb-4 overflow-x-auto px-4">
         <ul className="flex gap-2">
           {VIEWS.map((v) => (
@@ -135,6 +146,7 @@ async function BillsList({ searchParams }: { searchParams: PageProps<"/contas">[
                     <p className="text-muted">
                       Vence {formatCalendarDate(bill.dueDate)}
                       {bill.categoryName ? ` · ${bill.categoryName}` : ""}
+                      {bill.recurrence ? " · Repete" : ""}
                     </p>
                   </div>
                   <BillBadge situation={bill.summary.situation} />
@@ -154,6 +166,9 @@ async function BillsList({ searchParams }: { searchParams: PageProps<"/contas">[
                 {bill.summary.daysOverdue > 0 ? (
                   <p className="text-sm font-semibold text-danger">
                     {bill.summary.daysOverdue} {bill.summary.daysOverdue === 1 ? "dia" : "dias"} de atraso
+                    {bill.charges && bill.charges.chargesOutstandingCents > 0 ? (
+                      <> · encargos estimados <Money cents={bill.charges.chargesOutstandingCents} /></>
+                    ) : null}
                   </p>
                 ) : null}
               </Link>
@@ -173,9 +188,14 @@ export default function BillsPage({ searchParams }: PageProps<"/contas">) {
           <h1 className="text-2xl font-bold sm:text-3xl">Contas a pagar</h1>
           <p className="mt-1 text-muted">Vencimentos e pagamentos da casa.</p>
         </div>
-        <Link href="/contas/nova" className={buttonClasses()}>
-          <PlusIcon /> Nova conta
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/contas/nova" className={buttonClasses()}>
+            <PlusIcon /> Nova conta
+          </Link>
+          <Link href="/parcelas" className={buttonClasses({ variant: "secondary" })}>
+            Parcelamentos
+          </Link>
+        </div>
       </div>
       <Suspense fallback={<LoadingCard label="Carregando contas…" />}>
         <BillsList searchParams={searchParams} />

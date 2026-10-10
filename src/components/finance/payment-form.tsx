@@ -20,11 +20,14 @@ import type { Option } from "@/server/finance/queries";
 export function PaymentForm({
   action,
   outstandingCents,
+  estimatedChargesCents = 0,
   today,
   accounts,
 }: {
   action: (state: FormState, form: FormData) => Promise<FormState>;
   outstandingCents: number;
+  /** Encargos estimados ainda não pagos (só informativo). */
+  estimatedChargesCents?: number;
   today: string;
   accounts: Option[];
 }) {
@@ -75,7 +78,11 @@ export function PaymentForm({
           name="charges"
           inputMode="decimal"
           placeholder="0,00"
-          hint="Juros ou multa que você pagou junto. Não diminuem o que falta pagar."
+          hint={
+            estimatedChargesCents > 0
+              ? `Juros ou multa pagos junto. Estimativa de hoje: ${formatBRL(estimatedChargesCents)} — confira no boleto.`
+              : "Juros ou multa que você pagou junto. Não diminuem o que falta pagar."
+          }
           defaultValue={v.charges ?? ""}
           errors={errors("charges")}
         />

@@ -6,12 +6,17 @@ const ENTITY: Record<string, string> = {
   bills: "a conta",
   bill_payments: "um pagamento",
   transactions: "o lançamento",
+  installment_plans: "o parcelamento",
+  installments: "uma parcela",
 };
 
 const FIELD: Record<string, string> = {
   name: "nome",
   description: "descrição",
   original_amount: "valor",
+  expected_amount: "valor da parcela",
+  fine_percent: "multa (%)",
+  interest_rate: "juros (%)",
   amount: "valor",
   due_date: "vencimento",
   occurred_on: "data",

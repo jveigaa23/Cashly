@@ -122,3 +122,24 @@ export function addMonths(month: string, delta: number): string {
   const index = y * 12 + (m - 1) + delta;
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
 }
+
+/**
+ * Soma meses a uma data mantendo o dia "âncora": 31/01 + 1 → 28/02 (ou 29),
+ * 31/01 + 2 → 31/03. O dia nunca "escorrega" de vez para o menor valor.
+ */
+export function addMonthsClamped(date: CalendarDate, months: number, anchorDay?: number): CalendarDate {
+  assertCalendarDate(date);
+  const [y, m, d] = date.split("-").map(Number);
+  const index = y * 12 + (m - 1) + months;
+  const ny = Math.floor(index / 12);
+  const nm = (index % 12) + 1;
+  const day = Math.min(anchorDay ?? d, daysInMonth(ny, nm));
+  return `${ny}-${String(nm).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** Data + n dias. */
+export function addDays(date: CalendarDate, days: number): CalendarDate {
+  assertCalendarDate(date);
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}

@@ -1,0 +1,91 @@
+# Regras financeiras do Cashly
+
+Todas as regras abaixo estão implementadas em funções puras (`src/domain/`) e,
+quando geram registros, também no banco (funções SQL equivalentes). Testes
+cruzados garantem que TypeScript e banco produzem o mesmo resultado.
+
+> **Estimativas não são valores oficiais.** Para juros, multas e parcelas
+> valem os termos do contrato, boleto, carnê ou credor.
+
+## Dinheiro e arredondamento
+
+- Valores em **centavos inteiros** na aplicação; `NUMERIC(14,2)` no banco.
+- Taxas em “micro-pontos percentuais” (1% = 1.000.000) com `BigInt`.
+- Somas são exatas; cada componente (multa, juros) é arredondado **uma vez**,
+  ao centavo, **meio para cima** (0,5 centavo → 1 centavo).
+- Valores digitados com mais de 2 casas são **recusados**, nunca arredondados.
+
+## Situação de uma conta a pagar
+
+| Situação | Regra |
+| --- | --- |
+| A vencer | saldo > 0 e vencimento depois de hoje |
+| Vence hoje | saldo > 0 e vencimento = hoje |
+| Vencida | saldo > 0 e vencimento antes de hoje |
+| Paga em parte | algum principal pago, saldo > 0 (pode estar vencida) |
+| Paga | principal pago = valor original |
+| Cancelada | cancelada explicitamente (com motivo) |
+
+“Hoje” é calculado no fuso da família (padrão `America/Sao_Paulo`). “Vencida”
+nunca é gravada; é derivada.
+
+## Pagamentos
+
+- Quitação é sempre ação explícita, com etapa de revisão.
+- Pagamento = **principal** + **encargos** (juros/multa pagos junto).
+  Só o principal reduz o saldo; principal nunca pode passar do saldo.
+- Data do pagamento não pode ser no futuro (fuso da família).
+- Cada pagamento gera **uma** despesa realizada; contas pendentes não entram
+  nos totais. Cancelar o pagamento cancela a despesa e recalcula a conta.
+- Reenvio do mesmo formulário não duplica (`request_id`).
+- Dois pagamentos simultâneos são serializados por bloqueio de linha.
+
+## Multa e juros (estimativa)
+
+- O atraso começa no **dia seguinte ao vencimento**. Não há ajuste para fim de
+  semana/feriado (estimativa conservadora: pode superestimar).
+- **Multa**: percentual aplicado **uma única vez**, se havia saldo após o
+  vencimento.
+  - base “valor original”: sobre o valor original;
+  - base “saldo”: sobre o que faltava no dia do vencimento.
+- **Juros simples**:
+  - ao dia: taxa × dias;
+  - ao mês: **pro rata die**, taxa ÷ 30 por dia.
+  - base “valor original”: o valor original enquanto houver saldo;
+  - base “saldo”: o saldo de cada dia; um pagamento no dia D reduz a base a
+    partir de D+1.
+- A contagem **para no dia da quitação** (ou na data de referência).
+- Encargos já pagos são abatidos do estimado.
+- Juros compostos **não** são calculados nesta versão.
+
+Exemplo: R$ 1.000,00, multa 2%, juros 1% a.m., 30 dias de atraso →
+multa R$ 20,00 + juros R$ 10,00 = R$ 1.030,00 estimados.
+
+## Parcelamentos
+
+- **Sem juros**: total ÷ parcelas; os centavos que sobram vão para a
+  **última** parcela (R$ 100,00 em 3 = 33,33 + 33,33 + 33,34).
+- **Juros simples ao mês**: juros = total × taxa × nº de parcelas
+  (arredondado ao centavo); (total + juros) dividido como acima.
+  Não é tabela Price.
+- Vencimentos mensais a partir da 1ª data, mantendo o dia âncora:
+  31/01 → 28/02 (29/02 em ano bissexto) → 31/03.
+- Geração idempotente: cada número de parcela existe uma vez no plano.
+- Saldo devedor = soma do que falta nas parcelas não canceladas.
+- Plano fica “quitado” quando todas as parcelas estão pagas; cancelar um
+  pagamento o reabre. Plano com pagamentos ativos não pode ser cancelado.
+
+## Recorrências
+
+- Mensal (no dia escolhido) ou anual (na mesma data).
+- Dia 29–31 em meses mais curtos cai no **último dia do mês**; 29/02 vira
+  28/02 em anos comuns.
+- A primeira ocorrência é a primeira data ≥ início; a data final é inclusiva.
+- As ocorrências são geradas até ~35 dias à frente ao abrir Contas ou
+  Lançamentos (e pelo agendador na Fase 6). A unicidade `(regra, data)`
+  impede duplicatas, inclusive em gerações simultâneas.
+- Contas recorrentes nascem “a vencer”; receitas/despesas recorrentes nascem
+  como **previstas** e só entram no realizado quando confirmadas.
+- “Parar de repetir” desativa a regra e cancela as ocorrências futuras ainda
+  sem pagamento; as passadas e as pagas permanecem.
+- Editar uma conta gerada altera só aquela ocorrência.

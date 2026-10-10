@@ -45,6 +45,7 @@ async function NewTransaction({ searchParams }: { searchParams: PageProps<"/lanc
             notes: "",
           }}
           submitLabel={type === "income" ? "Salvar receita" : "Salvar despesa"}
+          allowRepeat
         />
       </Card>
     </>

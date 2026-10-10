@@ -29,6 +29,7 @@ export function TransactionForm({
   initial,
   submitLabel,
   lockedToPayment = false,
+  allowRepeat = false,
 }: {
   action: (state: FormState, form: FormData) => Promise<FormState>;
   categories: Option[];
@@ -37,6 +38,8 @@ export function TransactionForm({
   submitLabel: string;
   /** Despesa gerada por pagamento de conta: só descrição, categoria e observação. */
   lockedToPayment?: boolean;
+  /** Só na criação: repetir todo mês (gera previstos). */
+  allowRepeat?: boolean;
 }) {
   const [state, formAction] = useActionState(action, initialFormState);
   const [requestId] = useState(() => crypto.randomUUID());
@@ -129,6 +132,19 @@ export function TransactionForm({
         </>
       )}
       <TextField label="Observação (opcional)" name="notes" defaultValue={v.notes} errors={e.notes} />
+      {allowRepeat ? (
+        <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border-2 border-border p-3">
+          <input type="checkbox" name="repeatMonthly" value="on" defaultChecked={state.values?.repeatMonthly === "on"} className="mt-1 size-5 accent-[var(--primary)]" />
+          <span>
+            <span className="font-semibold">Repetir todo mês</span>
+            <span className="block text-sm text-muted">
+              Ex.: salário, aposentadoria, aluguel. Cada mês aparece como previsto até você confirmar.
+            </span>
+          </span>
+        </label>
+      ) : (
+        <input type="hidden" name="repeatMonthly" value="" />
+      )}
       <SubmitButton pendingText="Salvando…">{submitLabel}</SubmitButton>
     </form>
   );

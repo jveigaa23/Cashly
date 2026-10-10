@@ -88,3 +88,17 @@ describe("aritmética de calendário", () => {
     expect(addMonths("2026-10", -12)).toBe("2025-10");
   });
 });
+
+describe("addMonthsClamped e addDays", () => {
+  it("mantém o dia âncora e respeita fim de mês", async () => {
+    const { addMonthsClamped, addDays } = await import("./date");
+    expect(addMonthsClamped("2026-01-31", 1)).toBe("2026-02-28");
+    expect(addMonthsClamped("2026-01-31", 2)).toBe("2026-03-31");
+    expect(addMonthsClamped("2026-02-28", 1, 31)).toBe("2026-03-31");
+    expect(addMonthsClamped("2023-12-15", 2)).toBe("2024-02-15");
+    expect(addMonthsClamped("2026-03-31", -1)).toBe("2026-02-28");
+    expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+    expect(addDays("2024-02-28", 1)).toBe("2024-02-29");
+    expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+  });
+});

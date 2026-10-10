@@ -16,12 +16,15 @@ export function ConfirmAction({
   title,
   description,
   confirmLabel,
+  withReason = true,
 }: {
   action: (state: FormState, form: FormData) => Promise<FormState>;
   triggerLabel: string;
   title: string;
   description: string;
   confirmLabel: string;
+  /** Pede o motivo (padrão). Desligue para confirmações simples. */
+  withReason?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(action, initialFormState);
@@ -39,9 +42,11 @@ export function ConfirmAction({
       <p className="font-semibold">{title}</p>
       <p className="text-muted">{description}</p>
       <FormMessage state={state} />
-      <TextField label="Motivo" name="reason" required autoFocus defaultValue={state.values?.reason} errors={state.fieldErrors?.reason} />
+      {withReason ? (
+        <TextField label="Motivo" name="reason" required autoFocus defaultValue={state.values?.reason} errors={state.fieldErrors?.reason} />
+      ) : null}
       <div className="flex flex-wrap gap-2">
-        <SubmitButton variant="danger" size="md" pendingText="Cancelando…">
+        <SubmitButton variant="danger" size="md" pendingText="Aguarde…">
           {confirmLabel}
         </SubmitButton>
         <Button variant="ghost" onClick={() => setOpen(false)}>
