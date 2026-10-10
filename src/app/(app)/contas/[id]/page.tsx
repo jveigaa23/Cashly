@@ -47,7 +47,7 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
         }}
       />
       <div className="mb-5">
-        <Link href="/contas" className="font-semibold text-primary underline underline-offset-4">
+        <Link href="/contas" className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">
           ← Contas a pagar
         </Link>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
@@ -63,7 +63,7 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
       <div className="flex flex-col gap-4">
         <Card aria-labelledby="valores">
           <CardTitle id="valores">Valores</CardTitle>
-          <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-lg">
+          <dl className="mt-3 pairs gap-y-2 text-lg">
             <dt>Valor original</dt>
             <dd className="text-right"><Money cents={bill.originalCents} /></dd>
             <dt>Já pago (principal)</dt>
@@ -92,7 +92,7 @@ async function BillDetail({ params, searchParams }: PageProps<"/contas/[id]">) {
         {bill.charges && bill.charges.totalChargesCents > 0 ? (
           <Card aria-labelledby="encargos">
             <CardTitle id="encargos">Encargos estimados até hoje</CardTitle>
-            <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-lg">
+            <dl className="mt-3 pairs gap-y-2 text-lg">
               <dt>Multa</dt>
               <dd className="text-right"><Money cents={bill.charges.fineCents} /></dd>
               <dt>Juros ({bill.charges.daysLate} {bill.charges.daysLate === 1 ? "dia" : "dias"})</dt>

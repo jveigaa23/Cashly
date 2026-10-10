@@ -125,3 +125,45 @@ body {
     color: #000;
   }
 }
+
+/*
+ * Fonte grande no celular: o Chrome do Android amplia a página inteira, e a
+ * largura útil cai para 240 px (150%) ou 180 px (200%). Abaixo de 320 px,
+ * listas "rótulo — valor" empilham e a navegação de mês quebra em duas linhas.
+ */
+.pairs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1rem;
+}
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+@media (max-width: 319.98px) {
+  .pairs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pairs > dd {
+    text-align: left;
+    margin-bottom: 0.375rem;
+  }
+  .period-nav {
+    flex-wrap: wrap;
+  }
+  .period-nav > p {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+}
+@media (max-width: 319.98px) {
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+}

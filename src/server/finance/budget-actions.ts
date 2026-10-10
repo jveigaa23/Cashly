@@ -52,12 +52,17 @@ export async function saveBudgetAction(_prev: FormState, form: FormData): Promis
 
 export async function removeBudgetAction(budgetId: string, month: string): Promise<FormState> {
   await requireMember();
+  if (!z.uuid().safeParse(budgetId).success || !z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).safeParse(month).success) {
+    return { status: "error", message: rpcErrorMessage({ message: "not_found" }) };
+  }
   const supabase = await createClient();
-  const { error } = await supabase.from("budgets").delete().eq("id", budgetId);
+  const { data, error } = await supabase.from("budgets").delete().eq("id", budgetId).select("id");
   if (error) {
     logServerError("removeBudget", error);
     return { status: "error", message: rpcErrorMessage(error) };
   }
+  // RLS: limite de outra família (ou já removido) não é apagado — não fingir sucesso.
+  if (data.length === 0) return { status: "error", message: rpcErrorMessage({ message: "not_found" }) };
   revalidatePath("/orcamento");
   redirect(`/orcamento?mes=${month}&removido=1`);
 }

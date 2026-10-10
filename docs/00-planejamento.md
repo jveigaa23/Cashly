@@ -214,6 +214,8 @@ arquivos alterados, decisões e próximos passos.
   push por agendador Vercel Cron protegido por `CRON_SECRET`.
 
 ### Fase 7 — Testes de integração, E2E, segurança, a11y e responsividade
+- **Concluída.** CSP, varredura axe/responsividade/fonte grande, testes de
+  segurança entre famílias, foco nas confirmações.
 ### Fase 8 — Produção, documentação final e implantação
 
 ## 8. Comandos de teste disponíveis

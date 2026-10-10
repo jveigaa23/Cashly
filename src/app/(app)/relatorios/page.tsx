@@ -35,7 +35,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/relatorios">
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 print:hidden">
-        <ul className="flex gap-2" aria-label="Tipo de período">
+        <ul className="flex flex-wrap gap-2" aria-label="Tipo de período">
           {KINDS.map((k) => (
             <li key={k.kind}>
               <Link
@@ -51,7 +51,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/relatorios">
             </li>
           ))}
         </ul>
-        <nav aria-label="Período" className="flex items-center justify-between gap-2">
+        <nav aria-label="Período" className="period-nav">
           <Link href={`/relatorios?periodo=${shiftPeriod(period, -1)}`} className={buttonClasses({ variant: "secondary" })} aria-label="Período anterior">←</Link>
           <p className="text-center text-lg font-bold first-letter:uppercase">{period.label}</p>
           <Link href={`/relatorios?periodo=${shiftPeriod(period, 1)}`} className={buttonClasses({ variant: "secondary" })} aria-label="Próximo período">→</Link>
@@ -67,7 +67,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/relatorios">
 
       <Card aria-labelledby="resumo">
         <CardTitle id="resumo">Receitas e despesas realizadas</CardTitle>
-        <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-lg">
+        <dl className="mt-3 pairs gap-y-1 text-lg">
           <dt>Receitas recebidas</dt>
           <dd className="text-right"><Money cents={r.sum.incomeCents} /></dd>
           <dt>Despesas pagas</dt>
@@ -103,35 +103,37 @@ async function Report({ searchParams }: { searchParams: PageProps<"/relatorios">
 
       <Card aria-labelledby="saldo">
         <CardTitle id="saldo">Evolução do saldo registrado</CardTitle>
-        <table className="mt-3 w-full">
-          <thead>
-            <tr className="text-left text-sm text-muted">
-              <th scope="col" className="py-1 font-medium">Fim de</th>
-              <th scope="col" className="py-1 text-right font-medium">Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-t border-border text-muted">
-              <th scope="row" className="py-2 text-left font-normal">Antes do período</th>
-              <td className="py-2 text-right"><Money cents={r.openingBalanceCents} /></td>
-            </tr>
-            {r.balance.map((b) => (
-              <tr key={b.month} className="border-t border-border">
-                <th scope="row" className="py-2 text-left font-normal first-letter:uppercase">{formatMonthYear(b.month)}</th>
-                {b.balanceCents === null ? (
-                  <td className="py-2 text-right text-muted">Ainda não chegou</td>
-                ) : (
-                  <td className={cn("py-2 text-right font-semibold", b.balanceCents < 0 && "text-danger")}><Money cents={b.balanceCents} /></td>
-                )}
+        <div className="overflow-x-auto">
+          <table className="mt-3 w-full">
+            <thead>
+              <tr className="text-left text-sm text-muted">
+                <th scope="col" className="py-1 font-medium">Fim de</th>
+                <th scope="col" className="py-1 text-right font-medium">Saldo</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <tr className="border-t border-border text-muted">
+                <th scope="row" className="py-2 text-left font-normal">Antes do período</th>
+                <td className="py-2 text-right"><Money cents={r.openingBalanceCents} /></td>
+              </tr>
+              {r.balance.map((b) => (
+                <tr key={b.month} className="border-t border-border">
+                  <th scope="row" className="py-2 text-left font-normal first-letter:uppercase">{formatMonthYear(b.month)}</th>
+                  {b.balanceCents === null ? (
+                    <td className="py-2 text-right text-muted">Ainda não chegou</td>
+                  ) : (
+                    <td className={cn("py-2 text-right font-semibold", b.balanceCents < 0 && "text-danger")}><Money cents={b.balanceCents} /></td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <Card aria-labelledby="contas">
         <CardTitle id="contas">Contas a pagar com vencimento no período</CardTitle>
-        <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+        <dl className="mt-3 pairs gap-y-1">
           <dt>Pagas ({r.bills.paid.count})</dt>
           <dd className="text-right"><Money cents={r.bills.paid.cents} /></dd>
           <dt>A vencer, em aberto ({r.bills.pending.count})</dt>
@@ -147,7 +149,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/relatorios">
 
       <Card aria-labelledby="parcelas">
         <CardTitle id="parcelas">Parcelas</CardTitle>
-        <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+        <dl className="mt-3 pairs gap-y-1">
           <dt>Pagas no período ({r.installments.paidInPeriodCount} pagamentos)</dt>
           <dd className="text-right"><Money cents={r.installments.paidInPeriodCents} /></dd>
           <dt>Vencendo no período, em aberto ({r.installments.dueInPeriodOpenCount})</dt>

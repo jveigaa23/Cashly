@@ -20,7 +20,7 @@ utilizável também no computador.
 | 4 | Juros, multas, recorrências e parcelas | Concluída |
 | 5 | Dashboard, orçamento, gráficos e relatórios | Concluída |
 | 6 | Notificações internas, push e WhatsApp (opcional) | Concluída — push depende de configuração (Fase 8); WhatsApp não ativado |
-| 7 | Testes de integração, E2E, segurança, acessibilidade | Pendente |
+| 7 | Testes de integração, E2E, segurança, acessibilidade | Concluída |
 | 8 | Produção, documentação final e implantação | Pendente |
 
 **Ainda não está pronto para uso real.** Já funcionam: login, família,
@@ -69,7 +69,7 @@ pnpm build && pnpm start
 | `pnpm typecheck` | Tipos de rotas + `tsc --noEmit` |
 | `pnpm test` | Testes unitários e de componentes (Vitest) |
 | `pnpm test:watch` | Vitest em modo contínuo |
-| `pnpm test:e2e` | Build + Playwright (celular 360 px e desktop) contra a pilha Supabase **local**, com login real |
+| `pnpm test:e2e` | Build + Playwright (celular 360 px e desktop) contra a pilha Supabase **local**, com login real; inclui a varredura de qualidade (`tests/e2e/authenticated/quality.spec.ts`: axe WCAG 2.1 AA em claro/escuro, 320/360 px, fonte grande 150%/200%, alvos de toque, CSP e console) |
 | `pnpm test:db` | Testes de banco/RLS em PostgreSQL temporário e isolado |
 | `pnpm test:integration` | Consultas e ações do servidor via supabase-js + PostgREST real, local |
 | `pnpm check` | Lint + typecheck + unitários + banco + integração |
@@ -85,6 +85,13 @@ pnpm build && pnpm start
 - [Supabase](docs/supabase.md): migrações, modelo de segurança, testes do banco, configuração de autenticação, backup.
 
 ## Limitações conhecidas
+
+- A política de segurança de conteúdo (CSP) permite scripts inline: o modo
+  de pré-renderização parcial do Next não é compatível com nonces. Scripts de
+  outros sites, `eval`, iframes e conexões externas continuam bloqueados.
+- A acessibilidade foi verificada com axe (automático), teclado e larguras
+  pequenas; ainda não houve teste com leitor de tela real (TalkBack) nem com
+  os pais usando o app.
 
 - Sem SMTP próprio, e-mails de confirmação/recuperação só chegam a membros
   da equipe do Supabase.

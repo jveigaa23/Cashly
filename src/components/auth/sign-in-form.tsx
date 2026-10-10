@@ -48,7 +48,7 @@ export function SignInForm() {
         <SubmitButton pendingText="Entrando…">Entrar</SubmitButton>
       </form>
       <div className="mt-5 flex flex-col gap-3 text-center">
-        <Link href="/esqueci-senha" className="font-semibold text-primary underline underline-offset-4">
+        <Link href="/esqueci-senha" className="inline-flex min-h-12 items-center justify-center font-semibold text-primary underline underline-offset-4">
           Esqueci minha senha
         </Link>
         <p>

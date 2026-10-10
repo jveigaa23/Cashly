@@ -24,21 +24,22 @@ export function BottomNav({ pathname: fixed }: { pathname?: string } = {}) {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-4 max-[279px]:grid-cols-2">
         {BOTTOM_NAV_ITEMS.map(({ href, label, Icon }) => {
           const active = isActive(pathname, href);
           return (
-            <li key={href}>
+            <li key={href} className="min-w-0">
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-xs font-medium",
+                  "flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-center text-xs font-medium",
                   active ? "text-primary" : "text-muted",
                 )}
               >
                 <Icon />
-                <span className={cn(active && "font-bold underline underline-offset-4")}>
+                {/* Fonte grande do celular: o rótulo quebra (com hífen) em vez de vazar. */}
+                <span className={cn("max-w-full hyphens-auto [overflow-wrap:anywhere]", active && "font-bold underline underline-offset-4")}>
                   {label}
                 </span>
               </Link>

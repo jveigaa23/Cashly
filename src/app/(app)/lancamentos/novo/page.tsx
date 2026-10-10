@@ -19,7 +19,7 @@ async function NewTransaction({ searchParams }: { searchParams: PageProps<"/lanc
   return (
     <>
       <div className="mb-5">
-        <Link href="/lancamentos" className="font-semibold text-primary underline underline-offset-4">← Lançamentos</Link>
+        <Link href="/lancamentos" className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">← Lançamentos</Link>
         <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{type === "income" ? "Nova receita" : "Nova despesa"}</h1>
         {type === "expense" ? (
           <p className="mt-1 text-muted">

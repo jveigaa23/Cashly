@@ -25,8 +25,9 @@ export function BarList({ title, rows, emptyText, limit = 8 }: { title: string; 
             <li key={r.categoryId ?? "sem"}>
               <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                 <span className="min-w-0">{r.name}</span>
-                <span className="tabular ml-auto whitespace-nowrap font-semibold">
-                  {formatBRL(r.cents)} <span className="text-sm font-normal text-muted">({formatBp(r.shareBp)})</span>
+                <span className="tabular ml-auto text-right font-semibold">
+                  <span className="whitespace-nowrap">{formatBRL(r.cents)}</span>{" "}
+                  <span className="whitespace-nowrap text-sm font-normal text-muted">({formatBp(r.shareBp)})</span>
                 </span>
               </div>
               <div className="mt-1 h-3 rounded-[4px] bg-surface-muted" aria-hidden="true" title={`${r.name}: ${formatBRL(r.cents)}`}>

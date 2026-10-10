@@ -40,7 +40,7 @@ async function PlanDetail({ params, searchParams }: PageProps<"/parcelas/[id]">)
     <>
       <Flash params={query} messages={{ salvo: "Parcelamento salvo.", pago: "Pagamento da parcela registrado.", "pagamento-cancelado": "Pagamento cancelado.", cancelado: "Parcelamento cancelado." }} />
       <div className="mb-5">
-        <Link href="/parcelas" className="font-semibold text-primary underline underline-offset-4">← Parcelamentos</Link>
+        <Link href="/parcelas" className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">← Parcelamentos</Link>
         <h1 className="mt-2 text-2xl font-bold break-words sm:text-3xl">{plan.description}</h1>
         <p className="mt-1 text-muted">
           {KIND[plan.kind]} em {plan.count}x{plan.categoryName ? ` · ${plan.categoryName}` : ""}
@@ -55,7 +55,7 @@ async function PlanDetail({ params, searchParams }: PageProps<"/parcelas/[id]">)
 
         <Card aria-labelledby="resumo">
           <CardTitle id="resumo">Resumo</CardTitle>
-          <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-lg">
+          <dl className="mt-3 pairs gap-y-2 text-lg">
             <dt>Valor financiado</dt>
             <dd className="text-right"><Money cents={plan.totalCents} /></dd>
             <dt>Total das parcelas</dt>

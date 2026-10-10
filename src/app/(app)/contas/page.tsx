@@ -63,8 +63,8 @@ async function BillsList({ searchParams }: { searchParams: PageProps<"/contas">[
           As contas já cadastradas estão corretas. Tente abrir esta tela de novo em instantes.
         </Notice>
       ) : null}
-      <nav aria-label="Filtrar contas" className="-mx-4 mb-4 overflow-x-auto px-4">
-        <ul className="flex gap-2">
+      <nav aria-label="Filtrar contas" className="-mx-4 mb-4 overflow-x-auto px-4 max-[319px]:-mx-2 max-[319px]:px-2">
+        <ul className="flex flex-wrap gap-2">
           {VIEWS.map((v) => (
             <li key={v.value}>
               <Link

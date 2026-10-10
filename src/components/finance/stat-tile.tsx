@@ -24,7 +24,7 @@ export function StatTile({
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       <p className="text-muted">{label}</p>
-      <p className="tabular mt-1 text-2xl font-bold">{formatBRL(cents)}</p>
+      <p className="tabular mt-1 text-2xl font-bold max-[219px]:text-xl">{formatBRL(cents)}</p>
       {delta ? (
         <p className={cn("mt-1 text-sm", good === null ? "text-muted" : good ? "text-success" : "text-danger")}>
           {delta.deltaCents === 0

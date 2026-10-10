@@ -60,69 +60,76 @@ export function ColumnChart({ title, series, groups }: { title: string; series: 
         )}
       </p>
 
-      <div className="relative mt-1 h-48 pl-14" onMouseLeave={() => setActive(null)}>
-        {scale.values.map((v) => (
-          <div key={v} className="pointer-events-none absolute inset-x-0" style={{ bottom: `${(v / scale.max) * 100}%` }} aria-hidden="true">
-            <div className="ml-14 border-t border-grid" />
-            <span className="absolute -top-2.5 left-0 w-12 text-right text-xs text-muted">{formatCompactBRL(v)}</span>
+      {/* Em telas muito estreitas (fonte grande), o gráfico rola sozinho; a página não. */}
+      <div className="overflow-x-auto">
+        <div className="min-w-56">
+          <div className="relative mt-1 h-48 pl-14" onMouseLeave={() => setActive(null)}>
+            {scale.values.map((v) => (
+              <div key={v} className="pointer-events-none absolute inset-x-0" style={{ bottom: `${(v / scale.max) * 100}%` }} aria-hidden="true">
+                <div className="ml-14 border-t border-grid" />
+                <span className="absolute -top-2.5 left-0 w-12 text-right text-xs text-muted">{formatCompactBRL(v)}</span>
+              </div>
+            ))}
+            <div className={`relative flex h-full items-end ${dense ? "gap-1" : "gap-2 max-[319px]:gap-1"}`}>
+              {groups.map((g) => (
+                <button
+                  key={g.key}
+                  type="button"
+                  onMouseEnter={() => setActive(g.key)}
+                  onFocus={() => setActive(g.key)}
+                  onClick={() => setActive(g.key)}
+                  aria-label={`${g.longLabel}: ${series.map((s) => `${s.label} ${formatBRL(g.values[s.key] ?? 0)}`).join(", ")}`}
+                  className={`flex h-full min-w-0 flex-1 items-end justify-center gap-[2px] rounded-md ${active === g.key ? "bg-surface-muted" : ""}`}
+                >
+                  {series.map((s) => {
+                    const v = g.values[s.key] ?? 0;
+                    return (
+                      <span
+                        key={s.key}
+                        aria-hidden="true"
+                        className={`block w-full max-w-6 rounded-t-[4px] ${s.colorClass}`}
+                        style={{ height: v > 0 ? `max(2px, ${(v / scale.max) * 100}%)` : 0 }}
+                      />
+                    );
+                  })}
+                </button>
+              ))}
+            </div>
           </div>
-        ))}
-        <div className={`relative flex h-full items-end ${dense ? "gap-1" : "gap-2"}`}>
-          {groups.map((g) => (
-            <button
-              key={g.key}
-              type="button"
-              onMouseEnter={() => setActive(g.key)}
-              onFocus={() => setActive(g.key)}
-              onClick={() => setActive(g.key)}
-              aria-label={`${g.longLabel}: ${series.map((s) => `${s.label} ${formatBRL(g.values[s.key] ?? 0)}`).join(", ")}`}
-              className={`flex h-full min-w-0 flex-1 items-end justify-center gap-[2px] rounded-md ${active === g.key ? "bg-surface-muted" : ""}`}
-            >
-              {series.map((s) => {
-                const v = g.values[s.key] ?? 0;
-                return (
-                  <span
-                    key={s.key}
-                    aria-hidden="true"
-                    className={`block w-full max-w-6 rounded-t-[4px] ${s.colorClass}`}
-                    style={{ height: v > 0 ? `max(2px, ${(v / scale.max) * 100}%)` : 0 }}
-                  />
-                );
-              })}
-            </button>
-          ))}
+          <div className={`mt-1 flex pl-14 text-xs text-muted ${dense ? "gap-1" : "gap-2 max-[319px]:gap-1"}`} aria-hidden="true">
+            {groups.map((g) => (
+              <span key={g.key} className="min-w-0 flex-1 text-center">
+                {dense ? g.label.charAt(0).toUpperCase() : g.label}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className={`mt-1 flex pl-14 text-xs text-muted ${dense ? "gap-1" : "gap-2"}`} aria-hidden="true">
-        {groups.map((g) => (
-          <span key={g.key} className="min-w-0 flex-1 text-center">
-            {dense ? g.label.charAt(0).toUpperCase() : g.label}
-          </span>
-        ))}
       </div>
 
       <details className="mt-3">
-        <summary className="min-h-10 cursor-pointer text-sm font-semibold text-primary">Ver em tabela</summary>
-        <table className="mt-2 w-full text-sm">
-          <thead>
-            <tr className="text-left text-muted">
-              <th scope="col" className="py-1 font-medium">Mês</th>
-              {series.map((s) => (
-                <th key={s.key} scope="col" className="py-1 text-right font-medium">{s.label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {groups.map((g) => (
-              <tr key={g.key} className="border-t border-border">
-                <th scope="row" className="py-1 text-left font-normal">{g.longLabel}</th>
+        <summary className="flex min-h-12 cursor-pointer items-center text-sm font-semibold text-primary">Ver em tabela</summary>
+        <div className="overflow-x-auto">
+          <table className="mt-2 w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted">
+                <th scope="col" className="py-1 font-medium">Mês</th>
                 {series.map((s) => (
-                  <td key={s.key} className="tabular py-1 text-right">{formatBRL(g.values[s.key] ?? 0)}</td>
+                  <th key={s.key} scope="col" className="py-1 text-right font-medium">{s.label}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {groups.map((g) => (
+                <tr key={g.key} className="border-t border-border">
+                  <th scope="row" className="py-1 text-left font-normal">{g.longLabel}</th>
+                  {series.map((s) => (
+                    <td key={s.key} className="tabular py-1 text-right">{formatBRL(g.values[s.key] ?? 0)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </details>
     </figure>
   );

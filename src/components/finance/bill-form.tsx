@@ -100,7 +100,7 @@ export function BillForm({
       )}
 
       <details open={chargesOpen} className="rounded-xl border-2 border-border p-3">
-        <summary className="min-h-10 cursor-pointer font-semibold">Multa e juros por atraso (opcional)</summary>
+        <summary className="flex min-h-12 cursor-pointer items-center font-semibold">Multa e juros por atraso (opcional)</summary>
         <div className="mt-3 flex flex-col gap-4">
           <p className="text-sm text-muted">
             Copie do boleto ou contrato. O Cashly só faz uma <strong>estimativa</strong>; o valor oficial é o do credor.

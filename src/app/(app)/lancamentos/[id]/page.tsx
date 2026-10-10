@@ -38,7 +38,7 @@ async function TransactionDetail({ params, searchParams }: PageProps<"/lancament
     <>
       <Flash params={query} messages={{ salvo: "Lançamento salvo.", cancelado: "Lançamento cancelado." }} />
       <div className="mb-5">
-        <Link href={`/lancamentos?mes=${tx.occurredOn.slice(0, 7)}`} className="font-semibold text-primary underline underline-offset-4">
+        <Link href={`/lancamentos?mes=${tx.occurredOn.slice(0, 7)}`} className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">
           ← Lançamentos
         </Link>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-2">

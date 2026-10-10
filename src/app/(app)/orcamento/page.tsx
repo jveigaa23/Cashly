@@ -29,7 +29,7 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
   return (
     <>
       <Flash params={params} messages={{ salvo: "Limite salvo.", removido: "Limite removido.", copiado: "Limites copiados do mês anterior." }} />
-      <nav aria-label="Mês" className="mb-4 flex items-center justify-between gap-2">
+      <nav aria-label="Mês" className="mb-4 period-nav">
         <Link href={`/orcamento?mes=${addMonths(month, -1)}`} className={buttonClasses({ variant: "secondary" })} aria-label="Mês anterior">←</Link>
         <p className="text-lg font-bold first-letter:uppercase">{formatMonthYear(month)}</p>
         <Link href={`/orcamento?mes=${addMonths(month, 1)}`} className={buttonClasses({ variant: "secondary" })} aria-label="Próximo mês">→</Link>

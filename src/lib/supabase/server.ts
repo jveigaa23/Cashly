@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { publicEnv } from "@/lib/env";
 import type { Database } from "./database.types";
 
@@ -11,6 +12,10 @@ import type { Database } from "./database.types";
  */
 export async function createClient() {
   const cookieStore = await cookies();
+  // O cliente de Auth lê o relógio (Date.now) ao validar o token; com Cache
+  // Components isso não pode acontecer durante a pré-renderização. Dados da
+  // família são sempre por requisição.
+  await connection();
   const env = publicEnv();
   return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,

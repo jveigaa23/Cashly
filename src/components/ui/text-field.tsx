@@ -52,7 +52,7 @@ export function TextField({ label, name, hint, errors, type = "text", className,
             onClick={() => setShowPassword((v) => !v)}
             aria-pressed={showPassword}
             aria-controls={id}
-            className="absolute inset-y-1 right-1 rounded-lg px-3 text-sm font-semibold text-primary hover:bg-surface-muted"
+            className="absolute inset-y-0 right-0 min-w-16 rounded-xl px-3 text-sm font-semibold text-primary hover:bg-surface-muted"
           >
             {showPassword ? "Ocultar" : "Mostrar"}
           </button>

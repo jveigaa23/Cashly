@@ -61,7 +61,7 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
         </Notice>
       ) : null}
 
-      <nav aria-label="Mês" className="mb-4 flex items-center justify-between gap-2">
+      <nav aria-label="Mês" className="mb-4 period-nav">
         <Link href={href({ mes: addMonths(month, -1) })} className={buttonClasses({ variant: "secondary" })} aria-label="Mês anterior">
           ←
         </Link>
@@ -71,7 +71,7 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
         </Link>
       </nav>
 
-      <ul className="mb-4 flex gap-2" aria-label="Tipo">
+      <ul className="mb-4 flex flex-wrap gap-2" aria-label="Tipo">
         {TYPES.map((t) => (
           <li key={t.value}>
             <Link
@@ -114,7 +114,7 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
 
       <Card className="mb-4" aria-labelledby="totais">
         <h2 id="totais" className="font-semibold">{filtered ? "Totais deste filtro" : "Totais do mês"}</h2>
-        <dl className="mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-lg">
+        <dl className="mt-2 pairs gap-y-1 text-lg">
           <dt>Receitas recebidas</dt>
           <dd className="text-right text-success"><Money cents={totals.incomeCents} /></dd>
           <dt>Despesas pagas</dt>
@@ -177,7 +177,7 @@ export default function TransactionsPage({ searchParams }: PageProps<"/lancament
       <div className="mb-5">
         <h1 className="text-2xl font-bold sm:text-3xl">Lançamentos</h1>
         <p className="mt-1 text-muted">Receitas e despesas da família.</p>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:flex">
+        <div className="mt-3 grid grid-cols-2 gap-2 max-[319px]:grid-cols-1 sm:flex">
           <Link href="/lancamentos/novo?tipo=despesa" className={buttonClasses()}>
             <PlusIcon /> Despesa
           </Link>

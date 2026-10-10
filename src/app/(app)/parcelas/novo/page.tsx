@@ -19,7 +19,7 @@ export default function NewPlanPage() {
   return (
     <>
       <div className="mb-5">
-        <Link href="/parcelas" className="font-semibold text-primary underline underline-offset-4">← Parcelamentos</Link>
+        <Link href="/parcelas" className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">← Parcelamentos</Link>
         <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Novo parcelamento</h1>
       </div>
       <Card>

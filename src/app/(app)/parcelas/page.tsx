@@ -30,7 +30,7 @@ async function Plans({ searchParams }: { searchParams: PageProps<"/parcelas">["s
 
   return (
     <>
-      <ul className="mb-4 flex gap-2">
+      <ul className="mb-4 flex flex-wrap gap-2">
         {[
           { value: "active", label: "Em andamento", href: "/parcelas" },
           { value: "all", label: "Todos", href: "/parcelas?ver=todos" },
@@ -61,7 +61,7 @@ async function Plans({ searchParams }: { searchParams: PageProps<"/parcelas">["s
           icon={<BillIcon width={40} height={40} />}
           title="Nenhum parcelamento aqui"
           description="Cadastre compras parceladas, carnês e empréstimos para acompanhar as parcelas."
-          action={<Link href="/parcelas/novo" className={buttonClasses()}><PlusIcon /> Novo parcelamento</Link>}
+          action={<Link href="/parcelas/novo" className={buttonClasses({ className: "max-[319px]:w-full" })}><PlusIcon /> Novo parcelamento</Link>}
         />
       ) : (
         <ul className="flex flex-col gap-3">
@@ -98,11 +98,11 @@ export default function PlansPage({ searchParams }: PageProps<"/parcelas">) {
     <>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link href="/contas" className="font-semibold text-primary underline underline-offset-4">← Contas a pagar</Link>
+          <Link href="/contas" className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">← Contas a pagar</Link>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Parcelamentos</h1>
           <p className="mt-1 text-muted">Compras parceladas, carnês e empréstimos.</p>
         </div>
-        <Link href="/parcelas/novo" className={buttonClasses()}>
+        <Link href="/parcelas/novo" className={buttonClasses({ className: "max-[319px]:w-full" })}>
           <PlusIcon /> Novo parcelamento
         </Link>
       </div>

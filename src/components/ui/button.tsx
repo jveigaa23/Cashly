@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
@@ -24,7 +24,7 @@ export function buttonClasses({
   className,
 }: { variant?: Variant; size?: Size; className?: string } = {}) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors",
+    "inline-flex items-center justify-center gap-2 rounded-xl text-center font-semibold transition-colors",
     "disabled:cursor-not-allowed disabled:opacity-50",
     variants[variant],
     sizes[size],
@@ -33,6 +33,7 @@ export function buttonClasses({
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: Ref<HTMLButtonElement>;
   variant?: Variant;
   size?: Size;
 };

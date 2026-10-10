@@ -29,7 +29,7 @@ export function Notice({
     <div
       role={role}
       className={cn(
-        "flex gap-3 rounded-xl border-l-4 p-4 text-foreground",
+        "flex gap-3 rounded-xl border-l-4 p-4 text-foreground max-[319px]:gap-2 max-[319px]:p-3",
         toneClass,
         className,
       )}

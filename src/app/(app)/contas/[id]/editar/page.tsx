@@ -29,7 +29,7 @@ async function EditBill({ params }: { params: PageProps<"/contas/[id]/editar">["
   return (
     <>
       <div className="mb-5">
-        <Link href={`/contas/${bill.id}`} className="font-semibold text-primary underline underline-offset-4">
+        <Link href={`/contas/${bill.id}`} className="inline-flex min-h-12 items-center font-semibold text-primary underline underline-offset-4">
           ← {bill.name}
         </Link>
         <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Editar conta</h1>

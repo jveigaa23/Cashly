@@ -131,6 +131,27 @@ tests/e2e/               Playwright
   do que falta.
 - WhatsApp: `whatsappStatus()` sempre "não configurado" nesta versão.
 
+### Qualidade e segurança (Fase 7)
+
+- CSP em todas as páginas (`next.config.ts`): `default-src 'self'`,
+  `connect-src 'self'` (o navegador não fala com o Supabase), `object-src
+  'none'`, `frame-ancestors 'none'`, `form-action 'self'`. Scripts inline
+  permitidos porque nonces não funcionam com Partial Prerendering.
+- `createClient()` chama `connection()`: o cliente de Auth lê o relógio, o
+  que não pode acontecer na pré-renderização (eliminou o aviso `Date.now()`).
+- Varredura E2E de todas as telas (`quality.spec.ts`): axe WCAG 2.1 AA em
+  claro e escuro, sem rolagem horizontal em 360/320 px e com a página
+  ampliada a 150%/200% (como a fonte grande do Chrome no Android), alvos de
+  toque >= 44 px, sem violação de CSP nem erro no console.
+- Abaixo de 320 px (fonte grande): listas "rótulo — valor" empilham
+  (`.pairs`), a navegação de mês quebra em duas linhas (`.period-nav`), a
+  barra de baixo vira 2×2 e os gráficos rolam dentro do próprio quadro.
+- Confirmações levam o foco para dentro e de volta ao botão.
+- `tests/integration/security.test.ts`: outra família, com os ids certos,
+  não consegue alterar contas, pagamentos, lançamentos, parcelas, orçamento,
+  contas de registro nem avisos; campos forjados (`household_id`,
+  `created_by`) são ignorados; categoria de outra família é recusada.
+
 ### Segurança (Fase 1)
 
 - Cabeçalhos: `X-Content-Type-Options`, `X-Frame-Options: DENY`,
@@ -157,4 +178,5 @@ tests/e2e/               Playwright
 | Saldo registrado calculado no banco (`registered_balance`) | Uma regra só para painel e relatórios, respeitando o RLS |
 | Verificação de senha vazada no app | O recurso do Supabase exige plano Pro |
 | Avisos internos sob demanda + push por Vercel Cron | Funciona sem chave secreta para o app; a chave fica só no agendador |
+| CSP sem nonce | Partial Prerendering não aceita nonces; o resto da política continua estrito |
 | Avisos sem valores em dinheiro | Notificação aparece na tela bloqueada; o valor fica dentro do app |

@@ -35,7 +35,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <fieldset className={cn("min-w-0", className)}>
       <legend className="mb-2 font-semibold">Aparência</legend>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 max-[319px]:grid-cols-1">
         {OPTIONS.map(({ value, label, Icon }) => {
           const checked = preference === value;
           return (

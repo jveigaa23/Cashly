@@ -42,7 +42,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
 
       <Card aria-labelledby="saldo">
         <h2 id="saldo" className="text-muted">Saldo registrado {isCurrent ? "hoje" : `no fim de ${formatMonthYear(month)}`}</h2>
-        <p className="tabular mt-1 break-words text-4xl font-bold sm:text-5xl">
+        <p className="tabular mt-1 break-words text-4xl font-bold max-[319px]:text-3xl max-[259px]:text-2xl max-[219px]:text-xl sm:text-5xl">
           <Money cents={d.balanceCents} />
         </p>
         <p className="mt-2 text-sm text-muted">
@@ -51,7 +51,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
         </p>
       </Card>
 
-      <nav aria-label="Mês do painel" className="flex items-center justify-between gap-2">
+      <nav aria-label="Mês do painel" className="period-nav">
         <Link href={`/?mes=${addMonths(month, -1)}`} className={buttonClasses({ variant: "secondary" })} aria-label="Mês anterior">←</Link>
         <p className="text-lg font-bold first-letter:uppercase">{formatMonthYear(month)}</p>
         {isCurrent ? (
@@ -78,7 +78,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
         {d.overdue.length > 0 ? (
           <Notice tone="danger" title={`${d.overdue.length} ${d.overdue.length === 1 ? "conta vencida" : "contas vencidas"}`} className="mt-3">
             Total em aberto <Money cents={d.overdue.reduce((s, o) => s + o.outstandingCents, 0)} className="font-semibold" /> (sem juros e multa).{" "}
-            <Link href="/contas?ver=overdue" className="font-semibold underline underline-offset-4">Ver vencidas</Link>
+            <Link href="/contas?ver=overdue" className="inline-flex min-h-12 items-center font-semibold underline underline-offset-4">Ver vencidas</Link>
           </Notice>
         ) : (
           <p className="mt-2 text-success">Nenhuma conta vencida.</p>
@@ -90,18 +90,18 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
           <ul className="mt-1 divide-y divide-border">
             {d.dueSoon.slice(0, 6).map((o) => (
               <li key={`${o.kind}-${o.id}`}>
-                <Link href={o.href} className="flex min-h-12 items-center justify-between gap-3 py-2 hover:bg-surface-muted">
-                  <span className="min-w-0 break-words">
+                <Link href={o.href} className="flex min-h-12 flex-wrap items-center justify-between gap-x-3 py-2 hover:bg-surface-muted">
+                  <span className="min-w-32 flex-1 break-words">
                     {o.name}
                     <span className="block text-sm text-muted">{o.dueDate === today ? "Vence hoje" : `Vence ${formatCalendarDate(o.dueDate)}`}</span>
                   </span>
-                  <Money cents={o.outstandingCents} className="font-semibold" />
+                  <Money cents={o.outstandingCents} className="ml-auto font-semibold" />
                 </Link>
               </li>
             ))}
           </ul>
         )}
-        <dl className="mt-4 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-t border-border pt-3">
+        <dl className="mt-4 pairs gap-y-1 border-t border-border pt-3">
           <dt>A pagar em {formatMonthYear(month).replace(/ de \d+$/, "")} (previsão)</dt>
           <dd className="text-right"><Money cents={d.dueThisMonthCents} /></dd>
           <dt>Parcelas futuras ({d.futureInstallmentsCount})</dt>
