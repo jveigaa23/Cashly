@@ -99,5 +99,5 @@ test("sem conexão: aviso no app e página offline nas navegações", async ({ p
 // `registration.update()`.
 test("Service Worker responde à versão atual", async ({ page }) => {
   await waitForServiceWorkerControl(page);
-  expect(await swVersion(page)).toBe("1");
+  expect(await swVersion(page)).toBe("2");
 });

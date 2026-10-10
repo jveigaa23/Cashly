@@ -82,7 +82,7 @@ multa R$ 20,00 + juros R$ 10,00 = R$ 1.030,00 estimados.
   28/02 em anos comuns.
 - A primeira ocorrência é a primeira data ≥ início; a data final é inclusiva.
 - As ocorrências são geradas até ~35 dias à frente ao abrir Contas ou
-  Lançamentos (e pelo agendador na Fase 6). A unicidade `(regra, data)`
+  Lançamentos . A unicidade `(regra, data)`
   impede duplicatas, inclusive em gerações simultâneas.
 - Contas recorrentes nascem “a vencer”; receitas/despesas recorrentes nascem
   como **previstas** e só entram no realizado quando confirmadas.
@@ -125,3 +125,17 @@ multa R$ 20,00 + juros R$ 10,00 = R$ 1.030,00 estimados.
   limite. Sempre com ícone e texto, não só cor.
 - Remover um limite não altera nenhum lançamento. “Copiar do mês anterior”
   só cria os limites que ainda não existem no mês.
+
+## Avisos
+
+- **Contas a vencer**: conta em aberto (a vencer ou paga em parte) com
+  vencimento entre hoje e hoje + N dias (padrão 3; escolhido em Ajustes).
+- **Vencidas**: conta ou parcela em aberto vencida há até 30 dias.
+- **Parcelas a vencer**: parcela em aberto de parcelamento ativo, mesma janela
+  de N dias.
+- **Orçamento**: quando as despesas pagas do mês atingem o percentual de aviso
+  do limite e quando passam do limite (dois avisos no máximo por limite/mês).
+- Cada aviso é criado uma única vez por item e vencimento (não repete todo
+  dia). Conta paga ou cancelada tira o aviso dos não lidos automaticamente.
+- "Hoje" é a data no fuso da família (`America/Sao_Paulo`).
+- Os avisos nunca trazem valores em dinheiro; o valor aparece ao abrir o app.

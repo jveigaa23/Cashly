@@ -21,6 +21,7 @@ Versionadas em `supabase/migrations/` e aplicadas em ordem:
 | `20261010200000_recurrence_installments.sql` | Fase 4: recorrências (geração idempotente), parcelamentos, pagamento de parcelas |
 | `20261010180000_bills_payments_rules.sql` | Fase 3: pagamentos e cancelamentos atômicos (RPC), status protegidos, idempotência (`request_id`), tipo de categoria |
 | `20261010220000_budgets_balance.sql` | Fase 5: remoção de orçamentos (só da própria família), data do saldo inicial opcional (obrigatória se saldo ≠ 0), `registered_balance(date)` (SECURITY INVOKER, respeita RLS) |
+| `20261010230000_notifications.sql` | Fase 6: candidatos a aviso, `refresh_notifications()` (só para quem chama), `register_push_subscription`, fila `enqueue_push_notifications` (só service_role), view `notification_feed` (security_invoker) |
 
 Como aplicar em um projeto novo: SQL Editor do painel (colar cada arquivo em
 ordem) ou `supabase db push` com a CLI ligada ao projeto.
@@ -28,7 +29,9 @@ ordem) ou `supabase db push` com a CLI ligada ao projeto.
 **Conferir que o banco remoto é igual às migrações**: rode
 `supabase/tests/schema-fingerprint.sql` no SQL Editor e no banco local de
 teste; os hashes devem coincidir. (Conferido em 10/10/2026 após a migração
-0006: idênticos.)
+0007: idênticos. A 0007 foi aplicada em duas partes pelo conector, que
+bloqueia comandos com DELETE/DROP sem confirmação visível; o resultado é o
+mesmo arquivo.)
 
 Após cada migração, regenere `src/lib/supabase/database.types.ts`.
 

@@ -28,7 +28,7 @@ Não havia stack preexistente; foi adotada a recomendada no briefing:
 | Validação (Fase 2+) | Zod | a adicionar quando houver formulários |
 | Formulários (Fase 3+) | React Hook Form | a adicionar quando necessário |
 | Gráficos (Fase 5) | HTML/CSS próprio (sem biblioteca) | decidido na Fase 5: poucos tipos de gráfico, acessível e leve |
-| Push (Fase 6) | `web-push` (server-side) | a adicionar na Fase 6 |
+| Push (Fase 6) | `web-push` 3.6.7 (server-side) | adicionado na Fase 6 |
 
 Dependências entram somente na fase em que são usadas. As versões ficam
 registradas em `pnpm-lock.yaml`.
@@ -210,6 +210,8 @@ arquivos alterados, decisões e próximos passos.
 - Avisos internos; Web Push com VAPID e inscrições por dispositivo;
   adaptador WhatsApp com estado `not_configured` até haver credenciais;
   agendador server-side.
+- **Concluída.** Avisos internos gerados sob demanda (sem chave secreta);
+  push por agendador Vercel Cron protegido por `CRON_SECRET`.
 
 ### Fase 7 — Testes de integração, E2E, segurança, a11y e responsividade
 ### Fase 8 — Produção, documentação final e implantação
@@ -233,7 +235,7 @@ arquivos alterados, decisões e próximos passos.
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | 2 | cliente+servidor | URL do projeto |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 2 | cliente+servidor | chave pública (protegida por RLS) |
-| `SUPABASE_SERVICE_ROLE_KEY` | 6 | **somente servidor** | apenas para o agendador de notificações |
+| `SUPABASE_SECRET_KEY` (sb_secret_…) | 6 | **somente servidor** | apenas para o agendador de notificações |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | 6 | cliente | chave pública VAPID |
 | `VAPID_PRIVATE_KEY` | 6 | **somente servidor** | |
 | `VAPID_SUBJECT` | 6 | servidor | `mailto:` do responsável |

@@ -9,10 +9,13 @@
  * - Demais requisições seguem direto para a rede (cache HTTP do navegador
  *   cuida dos arquivos estáticos versionados do Next).
  *
+ * Avisos (Web Push): mostra a notificação recebida e, ao tocar, abre a página
+ * do aviso no próprio app (somente endereços do mesmo site).
+ *
  * Atualização: ao alterar este arquivo, incremente SW_VERSION. A nova versão
  * fica "em espera" até a pessoa tocar em "Atualizar" (mensagem SKIP_WAITING).
  */
-const SW_VERSION = "1";
+const SW_VERSION = "2";
 const CACHE_NAME = `cashly-shell-v${SW_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const PRECACHE_URLS = [
@@ -68,6 +71,45 @@ self.addEventListener("fetch", (event) => {
           })
         );
       }
+    })(),
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const title = typeof data.title === "string" && data.title ? data.title : "Cashly";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: typeof data.body === "string" ? data.body : "Você tem um novo aviso.",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: typeof data.tag === "string" ? data.tag : undefined,
+      data: { url: typeof data.url === "string" ? data.url : "/avisos" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/avisos", self.location.origin);
+  // Nunca abre endereços de fora do app.
+  const url = target.origin === self.location.origin ? target.href : new URL("/avisos", self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of windows) {
+        if (new URL(client.url).origin === self.location.origin && "focus" in client) {
+          await client.focus();
+          if ("navigate" in client) await client.navigate(url);
+          return;
+        }
+      }
+      await self.clients.openWindow(url);
     })(),
   );
 });

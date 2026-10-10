@@ -67,5 +67,15 @@ app chegam imediatamente em cada deploy, mesmo sem trocar o SW.
 
 ## Push (Fase 6)
 
-Os eventos `push`/`notificationclick` serão adicionados a este SW na Fase 6,
-com chaves VAPID e inscrições por dispositivo salvas no servidor.
+- `push`: mostra a notificação (título e texto vêm do servidor, **sem
+  valores em dinheiro**). `notificationclick`: foca uma janela do app ou abre
+  uma nova no endereço do aviso — só endereços do próprio site.
+- Nenhuma mudança na política de cache: o SW continua sem guardar HTML ou dados.
+- Ativação por aparelho em Ajustes → Avisos ("Ativar avisos neste aparelho"),
+  com pedido de permissão do navegador. iPhone: só com o app instalado na tela
+  de início (iOS 16.4+); a tela explica isso.
+- Inscrição salva pela função `register_push_subscription` (valida endpoint
+  `https://` e chaves; aparelho compartilhado passa para quem ativou por último).
+- O E2E não recebe push real (o serviço de push do navegador fica fora da
+  rede de testes); envio, expiração e novas tentativas são cobertos por testes
+  de integração com um envio simulado.

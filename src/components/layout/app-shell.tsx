@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BellLink, NotificationBell } from "@/components/notifications/notification-bell";
 import { ConnectionStatus } from "@/components/pwa/connection-status";
 import { ThemeQuickToggle } from "@/components/theme/theme-quick-toggle";
 import { BottomNav, SettingsLink, SideNav } from "./app-nav";
@@ -25,6 +26,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="text-xl">Cashly</span>
           </Link>
           <div className="flex items-center gap-1">
+            <Suspense fallback={<BellLink />}>
+              <NotificationBell />
+            </Suspense>
             <ThemeQuickToggle />
             <Suspense fallback={<SettingsLink pathname="" />}>
               <SettingsLink />

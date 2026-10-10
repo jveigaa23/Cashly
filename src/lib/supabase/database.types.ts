@@ -631,6 +631,7 @@ export type Database = {
           sent_at: string | null
           status: string
           updated_at: string
+          variant: string
         }
         Insert: {
           attempts?: number
@@ -648,6 +649,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           updated_at?: string
+          variant?: string
         }
         Update: {
           attempts?: number
@@ -665,6 +667,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           updated_at?: string
+          variant?: string
         }
         Relationships: [
           {
@@ -957,7 +960,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      notification_feed: {
+        Row: {
+          id: string
+          household_id: string
+          member_id: string
+          channel: string
+          event: string
+          reference_type: string
+          reference_id: string
+          scheduled_for: string
+          variant: string
+          status: string
+          attempts: number
+          created_at: string
+          read_at: string | null
+          reference_name: string | null
+          reference_due_date: string | null
+          reference_status: string | null
+          installment_number: number | null
+          installment_count: number | null
+          plan_id: string | null
+          budget_month: string | null
+          budget_alert_percent: number | null
+          budget_general: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_household_invite: {
@@ -1014,6 +1043,12 @@ export type Database = {
       }
       generate_recurrences: { Args: never; Returns: number }
       registered_balance: { Args: { p_until: string }; Returns: number }
+      refresh_notifications: { Args: never; Returns: number }
+      register_push_subscription: {
+        Args: { p_endpoint: string; p_p256dh: string; p_auth: string; p_user_agent?: string | null }
+        Returns: string
+      }
+      enqueue_push_notifications: { Args: { p_now?: string }; Returns: number }
       register_bill_payment: {
         Args: {
           p_account_id?: string

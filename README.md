@@ -19,7 +19,7 @@ utilizável também no computador.
 | 3 | Contas, despesas, receitas e pagamentos manuais | Concluída |
 | 4 | Juros, multas, recorrências e parcelas | Concluída |
 | 5 | Dashboard, orçamento, gráficos e relatórios | Concluída |
-| 6 | Notificações internas, push e WhatsApp (opcional) | Pendente |
+| 6 | Notificações internas, push e WhatsApp (opcional) | Concluída — push depende de configuração (Fase 8); WhatsApp não ativado |
 | 7 | Testes de integração, E2E, segurança, acessibilidade | Pendente |
 | 8 | Produção, documentação final e implantação | Pendente |
 
@@ -29,7 +29,9 @@ cancelamentos e histórico) e lançamentos de receitas e despesas (realizados e
 previstos), juros e multas estimados, contas e lançamentos que se repetem e
 parcelamentos (com juros simples opcionais), painel com saldo registrado e
 gráficos, orçamento mensal por categoria e relatórios mensal/trimestral/anual
-com planilha (CSV) e impressão/PDF. Notificações chegam na Fase 6.
+com planilha (CSV) e impressão/PDF, avisos no app (contas a vencer e
+vencidas, parcelas, orçamento) e avisos no celular (Web Push), que passam a
+funcionar quando as chaves forem configuradas na hospedagem.
 
 Pendências para uso real (ver [docs/supabase.md](docs/supabase.md)):
 SMTP próprio para os e-mails de confirmação/recuperação, hospedagem com HTTPS
@@ -109,5 +111,11 @@ pnpm build && pnpm start
   pelo app no cadastro e na troca de senha; se o serviço estiver fora do ar,
   a senha é aceita (o login não fica bloqueado por um serviço externo).
 - Uso offline limitado a uma página informativa; nada é salvo sem conexão.
+- Avisos no app são gerados quando a pessoa abre o Cashly; avisos no celular
+  dependem do agendador diário (Vercel Cron, ~8h de Brasília no plano grátis,
+  horário aproximado) e das chaves VAPID. Contas vencidas há mais de 30 dias
+  não geram aviso novo (continuam no painel e em Contas).
+- WhatsApp não envia mensagens: exige conta Meta Business, número e modelos
+  aprovados, com custo; aparece como "Não configurado".
 - O teste E2E não cobre a atualização do Service Worker (limitação do
   Playwright); o fluxo é coberto por testes unitários.

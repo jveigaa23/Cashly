@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AccountsSection } from "@/components/finance/accounts-section";
 import { AccountSection } from "@/components/household/account-section";
 import { FamilySection } from "@/components/household/family-section";
+import { NotificationsSection } from "@/components/notifications/notifications-section";
 import { PageHeader } from "@/components/layout/page-header";
 import { InstallGuide } from "@/components/pwa/install-guide";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -28,6 +29,9 @@ export default function SettingsPage() {
         </Suspense>
         <Suspense fallback={<SectionLoading label="contas" />}>
           <AccountsSection />
+        </Suspense>
+        <Suspense fallback={<SectionLoading label="avisos" />}>
+          <NotificationsSection />
         </Suspense>
         <Card>
           <ThemeToggle />

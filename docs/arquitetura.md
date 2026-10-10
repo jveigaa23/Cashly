@@ -116,6 +116,21 @@ tests/e2e/               Playwright
 - Verificação de senha vazada no servidor (`src/server/password-check.ts`,
   k-anonimato) no cadastro e na troca de senha.
 
+### Avisos (Fase 6)
+
+- Avisos internos: o sino do cabeçalho chama `refresh_notifications()`, que
+  cria (idempotente) os avisos da própria pessoa a partir dos registros e
+  das preferências. Não precisa de chave secreta nem de agendador.
+- Texto montado na leitura (`src/domain/notifications.ts`) a partir da view
+  `notification_feed`; nada de conteúdo financeiro guardado nas entregas.
+- Push: `GET /api/cron/notificacoes` (Vercel Cron, `vercel.json`) protegido
+  por `CRON_SECRET` (comparação em tempo constante) e excluído do proxy de
+  sessão. Usa `SUPABASE_SECRET_KEY` só ali (`src/lib/supabase/admin.ts`),
+  enfileira no banco e envia com `web-push`; 404/410 expiram o aparelho,
+  outras falhas tentam de novo até 3 vezes. Sem configuração: 503 com a lista
+  do que falta.
+- WhatsApp: `whatsappStatus()` sempre "não configurado" nesta versão.
+
 ### Segurança (Fase 1)
 
 - Cabeçalhos: `X-Content-Type-Options`, `X-Frame-Options: DENY`,
@@ -141,3 +156,5 @@ tests/e2e/               Playwright
 | Gráficos em HTML/CSS em vez de biblioteca | Poucos tipos de gráfico; acessível (texto e tabela), leve e sem dependência |
 | Saldo registrado calculado no banco (`registered_balance`) | Uma regra só para painel e relatórios, respeitando o RLS |
 | Verificação de senha vazada no app | O recurso do Supabase exige plano Pro |
+| Avisos internos sob demanda + push por Vercel Cron | Funciona sem chave secreta para o app; a chave fica só no agendador |
+| Avisos sem valores em dinheiro | Notificação aparece na tela bloqueada; o valor fica dentro do app |

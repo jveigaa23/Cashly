@@ -7,7 +7,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Tudo, exceto arquivos estáticos, ícones, manifest, SW e página offline.
-    "/((?!_next/static|_next/image|icons/|manifest.webmanifest|sw.js|offline.html|icon.svg|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Tudo, exceto arquivos estáticos, ícones, manifest, SW, página offline e o
+    // agendador (protegido por CRON_SECRET, sem sessão de usuário).
+    "/((?!_next/static|_next/image|api/cron/|icons/|manifest.webmanifest|sw.js|offline.html|icon.svg|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
