@@ -89,3 +89,39 @@ multa R$ 20,00 + juros R$ 10,00 = R$ 1.030,00 estimados.
 - “Parar de repetir” desativa a regra e cancela as ocorrências futuras ainda
   sem pagamento; as passadas e as pagas permanecem.
 - Editar uma conta gerada altera só aquela ocorrência.
+
+## Saldo registrado (painel e relatórios)
+
+- O Cashly não se conecta ao banco. O **saldo registrado** até uma data é:
+  soma dos saldos iniciais das contas (com data ≤ data) + receitas
+  **recebidas** − despesas **pagas** até essa data.
+- O saldo inicial de uma conta vale a partir do dia informado; lançamentos
+  daquela conta **anteriores** a esse dia não entram (o saldo inicial já os
+  inclui). Lançamentos sem conta sempre entram. Saldo inicial diferente de 0
+  exige a data.
+- Previstos, cancelados e contas ainda não pagas **nunca** entram.
+- Regra única: função `registered_balance(date)` no banco, usada pelo painel
+  e por cada fim de mês do relatório. No mês atual, o saldo é até hoje; meses
+  futuros aparecem como “Ainda não chegou”.
+
+## Totais, comparações e categorias
+
+- Receitas/despesas do mês = lançamentos confirmados com data no mês. O
+  previsto aparece separado e não entra no resultado.
+- Comparação com o mês anterior: diferença em R$ e em %; se o mês anterior
+  for 0, só a diferença em R$.
+- Participação por categoria em pontos-base (0,01%), arredondada para baixo;
+  lançamentos sem categoria aparecem como “Sem categoria”.
+
+## Orçamento
+
+- Limite mensal geral (todas as despesas) ou por categoria; um por
+  combinação mês + categoria (salvar de novo atualiza).
+- **Gasto** = despesas pagas no mês (na categoria, ou todas, no geral).
+  Despesas previstas e contas em aberto com vencimento no mês aparecem à
+  parte como **previsão**, sem entrar no gasto.
+- Situação: “Dentro do limite”; “Perto do limite” quando o gasto atinge o
+  percentual de aviso (padrão 80%); “Limite ultrapassado” quando passa do
+  limite. Sempre com ícone e texto, não só cor.
+- Remover um limite não altera nenhum lançamento. “Copiar do mês anterior”
+  só cria os limites que ainda não existem no mês.

@@ -28,6 +28,11 @@
   --danger-bg: #fee4e2;
   --info: #1e4fa3;
   --info-bg: #dbeafe;
+  /* Gráficos: paleta categórica validada (scripts do dataviz) para esta superfície. */
+  --series-income: #2a78d6;
+  --series-expense: #eb6834;
+  --series-income-track: #cde2fb;
+  --grid: #e6ebe9;
 }
 
 [data-theme="dark"] {
@@ -50,6 +55,10 @@
   --danger-bg: #3d1513;
   --info: #93c5fd;
   --info-bg: #142a4a;
+  --series-income: #3987e5;
+  --series-expense: #d95926;
+  --series-income-track: #184f95;
+  --grid: #26312d;
 }
 
 @theme inline {
@@ -71,6 +80,10 @@
   --color-danger-bg: var(--danger-bg);
   --color-info: var(--info);
   --color-info-bg: var(--info-bg);
+  --color-series-income: var(--series-income);
+  --color-series-expense: var(--series-expense);
+  --color-series-income-track: var(--series-income-track);
+  --color-grid: var(--grid);
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Noto Sans", sans-serif;
 }
@@ -103,5 +116,12 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
   }
 }

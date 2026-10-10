@@ -20,6 +20,7 @@ Versionadas em `supabase/migrations/` e aplicadas em ordem:
 | `20261010160200_notifications_audit.sql` | Preferências e entregas de avisos, inscrições push, histórico de alterações |
 | `20261010200000_recurrence_installments.sql` | Fase 4: recorrências (geração idempotente), parcelamentos, pagamento de parcelas |
 | `20261010180000_bills_payments_rules.sql` | Fase 3: pagamentos e cancelamentos atômicos (RPC), status protegidos, idempotência (`request_id`), tipo de categoria |
+| `20261010220000_budgets_balance.sql` | Fase 5: remoção de orçamentos (só da própria família), data do saldo inicial opcional (obrigatória se saldo ≠ 0), `registered_balance(date)` (SECURITY INVOKER, respeita RLS) |
 
 Como aplicar em um projeto novo: SQL Editor do painel (colar cada arquivo em
 ordem) ou `supabase db push` com a CLI ligada ao projeto.
@@ -27,7 +28,7 @@ ordem) ou `supabase db push` com a CLI ligada ao projeto.
 **Conferir que o banco remoto é igual às migrações**: rode
 `supabase/tests/schema-fingerprint.sql` no SQL Editor e no banco local de
 teste; os hashes devem coincidir. (Conferido em 10/10/2026 após a migração
-0005: idênticos.)
+0006: idênticos.)
 
 Após cada migração, regenere `src/lib/supabase/database.types.ts`.
 
@@ -94,7 +95,7 @@ Nunca toca o projeto real. Requer PostgreSQL 15+ instalado (ou `PG_BIN`).
 | Site URL | URL de produção (`https://...`) | **pendente: hospedagem** |
 | Redirect URLs | `https://<prod>/auth/callback`, `http://localhost:3000/auth/callback` | **pendente** |
 | SMTP próprio | ex.: Resend, Brevo, Amazon SES | **pendente — ver abaixo** |
-| Proteção contra senhas vazadas (HaveIBeenPwned) | ligada | pendente (aviso do Security Advisor; pode exigir plano pago) |
+| Proteção contra senhas vazadas (HaveIBeenPwned) | ligada | exige plano Pro; o app faz a verificação própria no cadastro e na troca de senha (`src/server/password-check.ts`) |
 
 **SMTP é necessário para uso real.** O envio padrão do Supabase só entrega
 e-mails para membros da equipe da organização e tem limite baixo por hora.

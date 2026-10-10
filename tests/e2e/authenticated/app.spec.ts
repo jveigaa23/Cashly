@@ -20,14 +20,6 @@ test.describe("com login", () => {
     }
   });
 
-  test("seções não implementadas não exibem valores simulados", async ({ page }) => {
-    for (const path of ["/", "/relatorios"]) {
-      await page.goto(path);
-      await expect(page.getByText(/Em construção — chega na Fase \d/)).toBeVisible();
-      await expect(page.locator("main")).not.toContainText("R$");
-    }
-  });
-
   test("link para pular ao conteúdo é o primeiro foco do teclado", async ({ page }) => {
     await page.goto("/");
     await page.keyboard.press("Tab");

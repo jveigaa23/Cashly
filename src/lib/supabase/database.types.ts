@@ -30,7 +30,7 @@ export type Database = {
           kind: string
           name: string
           opening_balance: number
-          opening_date: string
+          opening_date: string | null
           updated_at: string
         }
         Insert: {
@@ -42,7 +42,7 @@ export type Database = {
           kind?: string
           name: string
           opening_balance?: number
-          opening_date?: string
+          opening_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -54,7 +54,7 @@ export type Database = {
           kind?: string
           name?: string
           opening_balance?: number
-          opening_date?: string
+          opening_date?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1013,6 +1013,7 @@ export type Database = {
         Returns: string
       }
       generate_recurrences: { Args: never; Returns: number }
+      registered_balance: { Args: { p_until: string }; Returns: number }
       register_bill_payment: {
         Args: {
           p_account_id?: string

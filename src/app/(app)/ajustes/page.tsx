@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AccountsSection } from "@/components/finance/accounts-section";
 import { AccountSection } from "@/components/household/account-section";
 import { FamilySection } from "@/components/household/family-section";
 import { PageHeader } from "@/components/layout/page-header";
@@ -24,6 +25,9 @@ export default function SettingsPage() {
       <div className="space-y-4">
         <Suspense fallback={<SectionLoading label="família" />}>
           <FamilySection />
+        </Suspense>
+        <Suspense fallback={<SectionLoading label="contas" />}>
+          <AccountsSection />
         </Suspense>
         <Card>
           <ThemeToggle />

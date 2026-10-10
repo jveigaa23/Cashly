@@ -144,3 +144,11 @@ export function decimalToCents(value: string | number): number {
 export function formatAmountInput(cents: number): string {
   return formatBRL(cents).replace(/^-?R\$\s*/, "");
 }
+
+const compact = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 });
+
+/** Rótulo curto para eixos de gráfico ("R$ 1,2 mil"). Só exibição. */
+export function formatCompactBRL(cents: number): string {
+  assertCents(cents);
+  return compact.format(cents / 100);
+}

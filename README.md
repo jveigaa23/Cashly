@@ -18,7 +18,7 @@ utilizável também no computador.
 | 2 | Banco de dados, autenticação e segurança (Supabase) | Concluída — pendências de configuração abaixo |
 | 3 | Contas, despesas, receitas e pagamentos manuais | Concluída |
 | 4 | Juros, multas, recorrências e parcelas | Concluída |
-| 5 | Dashboard, orçamento, gráficos e relatórios | Pendente |
+| 5 | Dashboard, orçamento, gráficos e relatórios | Concluída |
 | 6 | Notificações internas, push e WhatsApp (opcional) | Pendente |
 | 7 | Testes de integração, E2E, segurança, acessibilidade | Pendente |
 | 8 | Produção, documentação final e implantação | Pendente |
@@ -27,9 +27,9 @@ utilizável também no computador.
 convites, contas a pagar (com pagamentos parciais, encargos pagos,
 cancelamentos e histórico) e lançamentos de receitas e despesas (realizados e
 previstos), juros e multas estimados, contas e lançamentos que se repetem e
-parcelamentos (com juros simples opcionais). Painel e relatórios chegam na
-Fase 5. Telas ainda não implementadas informam a fase e
-não exibem dados simulados.
+parcelamentos (com juros simples opcionais), painel com saldo registrado e
+gráficos, orçamento mensal por categoria e relatórios mensal/trimestral/anual
+com planilha (CSV) e impressão/PDF. Notificações chegam na Fase 6.
 
 Pendências para uso real (ver [docs/supabase.md](docs/supabase.md)):
 SMTP próprio para os e-mails de confirmação/recuperação, hospedagem com HTTPS
@@ -84,7 +84,6 @@ pnpm build && pnpm start
 
 ## Limitações conhecidas
 
-- Cadastro de contas, lançamentos e pagamentos ainda não existe (Fase 3).
 - Sem SMTP próprio, e-mails de confirmação/recuperação só chegam a membros
   da equipe do Supabase.
 - Cada conta participa de uma única família.
@@ -99,8 +98,16 @@ pnpm build && pnpm start
   são calculados; as estimativas de encargos não são valores oficiais.
 - Repetições semanais não existem (só mensal e anual); editar a regra de uma
   repetição exige parar e cadastrar de novo.
-- Categorias e contas bancárias de registro ainda não podem ser editadas pela
-  interface (usam o cadastro inicial).
+- Categorias ainda não podem ser editadas pela interface (usam o cadastro
+  inicial). Contas de registro podem ter nome e saldo inicial ajustados em
+  Ajustes, mas não criadas/arquivadas; o saldo inicial não pode ser negativo.
+- O “Saldo registrado” é calculado só com o que foi lançado no Cashly; não é
+  o saldo do banco.
+- O relatório tem limite de 20.000 lançamentos por período (mostra erro em
+  vez de totais incompletos).
+- A verificação de senha vazada (HaveIBeenPwned, por k-anonimato) é feita
+  pelo app no cadastro e na troca de senha; se o serviço estiver fora do ar,
+  a senha é aceita (o login não fica bloqueado por um serviço externo).
 - Uso offline limitado a uma página informativa; nada é salvo sem conexão.
 - O teste E2E não cobre a atualização do Service Worker (limitação do
   Playwright); o fluxo é coberto por testes unitários.

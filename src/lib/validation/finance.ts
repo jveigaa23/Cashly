@@ -131,3 +131,25 @@ export const transactionSchema = z.object({
 });
 
 export const PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartão de débito", "Cartão de crédito", "Boleto", "Transferência", "Débito automático"] as const;
+
+export const budgetSchema = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Mês inválido."),
+  categoryId: optionalUuid,
+  limit: moneyField("o limite"),
+  alertPercent: z.coerce
+    .number({ error: "Informe um percentual." })
+    .int("Use um número inteiro.")
+    .min(1, "Entre 1 e 100.")
+    .max(100, "Entre 1 e 100."),
+});
+
+export const accountSchema = z
+  .object({
+    name: z.string().trim().min(1, "Dê um nome para a conta.").max(60, "Use no máximo 60 caracteres."),
+    openingBalance: moneyField("o saldo", { allowZero: true }),
+    openingDate: optionalDate,
+  })
+  .refine((a) => a.openingBalance === 0 || a.openingDate !== null, {
+    path: ["openingDate"],
+    message: "Informe em que dia esse saldo foi conferido.",
+  });

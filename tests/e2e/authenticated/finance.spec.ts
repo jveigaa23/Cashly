@@ -66,7 +66,7 @@ test("conta a pagar: cadastrar, pagar em parte com revisão, quitar e cancelar p
   // A despesa do pagamento aparece em Lançamentos, uma vez só.
   await page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).getByRole("link", { name: "Lançamentos" }).click();
   await expect(page.getByText("Pagamento: Conta de luz")).toHaveCount(1);
-  await expect(page.getByText("Despesas pagas")).toBeVisible();
+  await expect(page.getByLabel("Totais do mês").getByText("Despesas pagas")).toBeVisible();
 });
 
 test("lançamentos: receita prevista, despesa paga, totais e cancelamento", async ({ page }) => {

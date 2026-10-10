@@ -99,6 +99,23 @@ tests/e2e/               Playwright
 - Despesa de pagamento de conta é criada automaticamente; por isso “Nova
   despesa” orienta a usar “Registrar pagamento” na conta.
 
+### Painel, orçamento e relatórios (Fase 5)
+
+- `src/domain/reports.ts`: totais mensais, categorias, comparação, uso do
+  orçamento e períodos (`2026-10`, `2026-T4`, `2026`) — funções puras.
+- `src/server/finance/reports.ts`: lê os registros de origem (paginado,
+  NUMERIC como texto) e deriva todos os totais; falha de forma explícita
+  acima de 20.000 lançamentos em vez de mostrar números incompletos.
+- Gráficos em HTML/CSS (`src/components/charts/`), sem biblioteca: colunas
+  agrupadas com legenda, valores em texto ao tocar/focar e “Ver em tabela”;
+  barras horizontais com nome, valor e % em texto. Paleta validada para
+  claro/escuro (tokens `--series-*`).
+- CSV: `GET /relatorios/csv?periodo=…` (exige login; `;`, vírgula decimal,
+  BOM UTF-8, proteção contra fórmulas em células). PDF via impressão do
+  navegador (`@media print` esconde navegação e controles).
+- Verificação de senha vazada no servidor (`src/server/password-check.ts`,
+  k-anonimato) no cadastro e na troca de senha.
+
 ### Segurança (Fase 1)
 
 - Cabeçalhos: `X-Content-Type-Options`, `X-Frame-Options: DENY`,
@@ -121,3 +138,6 @@ tests/e2e/               Playwright
 | Testes de RLS em PostgreSQL local com réplica do `auth` | Isolados do projeto real e sem Docker |
 | Pilha Supabase local (GoTrue + PostgREST binários) para integração/E2E | Testes com login reais sem tocar o projeto real nem depender de Docker |
 | Formulários sem React Hook Form | Formulários simples; Server Actions + `useActionState` bastam |
+| Gráficos em HTML/CSS em vez de biblioteca | Poucos tipos de gráfico; acessível (texto e tabela), leve e sem dependência |
+| Saldo registrado calculado no banco (`registered_balance`) | Uma regra só para painel e relatórios, respeitando o RLS |
+| Verificação de senha vazada no app | O recurso do Supabase exige plano Pro |

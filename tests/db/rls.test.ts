@@ -57,12 +57,12 @@ describe("configuração", () => {
     expect(rows).toEqual([]);
   });
 
-  it("ninguém além do dono do banco pode apagar registros financeiros", async () => {
+  it("só orçamentos (planejamento) e dispositivos push podem ser apagados pela API", async () => {
     const { rows } = await db.query(
       `select table_name from information_schema.role_table_grants
        where grantee = 'authenticated' and table_schema = 'public' and privilege_type = 'DELETE'`,
     );
-    expect(rows.map((r) => r.table_name)).toEqual(["push_subscriptions"]);
+    expect(rows.map((r) => r.table_name).sort()).toEqual(["budgets", "push_subscriptions"]);
   });
 
   it("funções SECURITY DEFINER têm search_path fixo", async () => {

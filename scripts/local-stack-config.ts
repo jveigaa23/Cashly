@@ -26,4 +26,6 @@ export const LOCAL_APP_ENV = {
   NEXT_PUBLIC_SUPABASE_URL: LOCAL_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: LOCAL_ANON_KEY,
   NEXT_PUBLIC_SITE_URL: LOCAL_SITE_URL,
+  // Testes não dependem do serviço externo de senhas vazadas.
+  PASSWORD_LEAK_CHECK: "off",
 };

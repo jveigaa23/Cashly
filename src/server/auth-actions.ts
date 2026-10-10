@@ -13,7 +13,10 @@ import {
   signUpSchema,
 } from "@/lib/validation/auth";
 import { authErrorMessage, logServerError } from "./errors";
+import { isPasswordLeaked } from "./password-check";
 import { requireUser } from "./session";
+
+const LEAKED_MESSAGE = "Essa senha já apareceu em vazamentos de dados na internet. Escolha outra senha.";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 
@@ -41,6 +44,10 @@ export async function signUpAction(_prev: FormState, form: FormData): Promise<Fo
   const parsed = signUpSchema.safeParse({ ...values, password: text(form, "password"), confirmPassword: text(form, "confirmPassword") });
   if (!parsed.success) {
     return { status: "error", message: "Confira os campos destacados.", fieldErrors: fieldErrors(parsed.error), values };
+  }
+
+  if (await isPasswordLeaked(parsed.data.password)) {
+    return { status: "error", message: "Confira os campos destacados.", fieldErrors: { password: [LEAKED_MESSAGE] }, values };
   }
 
   const supabase = await createClient();
@@ -94,6 +101,10 @@ export async function updatePasswordAction(_prev: FormState, form: FormData): Pr
   if (!parsed.success) {
     return { status: "error", message: "Confira os campos destacados.", fieldErrors: fieldErrors(parsed.error) };
   }
+  if (await isPasswordLeaked(parsed.data.password)) {
+    return { status: "error", message: "Confira os campos destacados.", fieldErrors: { password: [LEAKED_MESSAGE] } };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) {

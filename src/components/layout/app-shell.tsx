@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         Pular para o conteúdo
       </a>
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+      <header className="sticky top-0 z-30 print:hidden border-b border-border bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <Link href="/" className="flex min-h-12 items-center gap-2 rounded-xl font-bold">
             <Image src="/icons/icon-192.png" alt="" width={36} height={36} className="rounded-lg" priority />
@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 pb-28 pt-4 md:pb-8">
-        <aside className="hidden w-56 shrink-0 md:block">
+        <aside className="hidden w-56 shrink-0 md:block print:hidden">
           <div className="sticky top-24">
             <Suspense fallback={<SideNav pathname="" />}>
               <SideNav />
@@ -47,9 +47,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      <Suspense fallback={<BottomNav pathname="" />}>
-        <BottomNav />
-      </Suspense>
+      <div className="print:hidden">
+        <Suspense fallback={<BottomNav pathname="" />}>
+          <BottomNav />
+        </Suspense>
+      </div>
     </div>
   );
 }

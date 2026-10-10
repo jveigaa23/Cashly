@@ -27,7 +27,7 @@ Não havia stack preexistente; foi adotada a recomendada no briefing:
 | Banco/Auth (Fase 2) | Supabase PostgreSQL + Supabase Auth + RLS | a definir na Fase 2 |
 | Validação (Fase 2+) | Zod | a adicionar quando houver formulários |
 | Formulários (Fase 3+) | React Hook Form | a adicionar quando necessário |
-| Gráficos (Fase 5) | Recharts | a adicionar na Fase 5 |
+| Gráficos (Fase 5) | HTML/CSS próprio (sem biblioteca) | decidido na Fase 5: poucos tipos de gráfico, acessível e leve |
 | Push (Fase 6) | `web-push` (server-side) | a adicionar na Fase 6 |
 
 Dependências entram somente na fase em que são usadas. As versões ficam
@@ -200,9 +200,11 @@ arquivos alterados, decisões e próximos passos.
   por `(rule_id, date)`.
 
 ### Fase 5 — Dashboard, orçamento, gráficos e relatórios
-- Agregações em SQL/RPC validadas contra registros de origem.
+- Agregações derivadas dos registros de origem (saldo em RPC), validadas por
+  testes de integração.
 - Dashboard separando saldo registrado, obrigações pendentes e previsões.
-- Recharts com alternativa textual/tabela; CSV e impressão.
+- Gráficos HTML/CSS com alternativa textual/tabela; CSV e impressão.
+- **Concluída.**
 
 ### Fase 6 — Notificações
 - Avisos internos; Web Push com VAPID e inscrições por dispositivo;
