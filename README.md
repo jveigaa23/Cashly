@@ -21,9 +21,9 @@ utilizável também no computador.
 | 5 | Dashboard, orçamento, gráficos e relatórios | Concluída |
 | 6 | Notificações internas, push e WhatsApp (opcional) | Concluída — push depende de configuração (Fase 8); WhatsApp não ativado |
 | 7 | Testes de integração, E2E, segurança, acessibilidade | Concluída |
-| 8 | Produção, documentação final e implantação | Pendente |
+| 8 | Produção, documentação final e implantação | Concluída — no ar em https://cashly-familia.vercel.app |
 
-**Ainda não está pronto para uso real.** Já funcionam: login, família,
+**No ar em https://cashly-familia.vercel.app** ([implantação](docs/implantacao.md), [guia dos pais](docs/guia-dos-pais.md)). Funcionam: login, família,
 convites, contas a pagar (com pagamentos parciais, encargos pagos,
 cancelamentos e histórico) e lançamentos de receitas e despesas (realizados e
 previstos), juros e multas estimados, contas e lançamentos que se repetem e
@@ -33,9 +33,10 @@ com planilha (CSV) e impressão/PDF, avisos no app (contas a vencer e
 vencidas, parcelas, orçamento) e avisos no celular (Web Push), que passam a
 funcionar quando as chaves forem configuradas na hospedagem.
 
-Pendências para uso real (ver [docs/supabase.md](docs/supabase.md)):
-SMTP próprio para os e-mails de confirmação/recuperação, hospedagem com HTTPS
-e configuração das URLs de redirecionamento no Supabase.
+Pendências do responsável (ver [docs/implantacao.md](docs/implantacao.md)):
+URLs de redirecionamento no Supabase (Site URL e `/auth/callback` de
+produção), `SUPABASE_SECRET_KEY` na Vercel (avisos no celular) e, se quiser
+um APK, o pacote do PWABuilder.
 
 ## Pré-requisitos
 
@@ -83,6 +84,8 @@ pnpm build && pnpm start
 - [PWA](docs/pwa.md): manifest, Service Worker, atualização, instalação e limites offline.
 - [Regras financeiras](docs/regras-financeiras.md): situação das contas, pagamentos, multa e juros, parcelas, recorrências e arredondamento.
 - [Supabase](docs/supabase.md): migrações, modelo de segurança, testes do banco, configuração de autenticação, backup.
+- [Implantação](docs/implantacao.md): Vercel, variáveis, cron, APK (PWABuilder), limites dos planos gratuitos.
+- [Guia dos pais](docs/guia-dos-pais.md): uso do dia a dia, em linguagem simples.
 
 ## Limitações conhecidas
 

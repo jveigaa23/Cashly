@@ -217,6 +217,7 @@ arquivos alterados, decisões e próximos passos.
 - **Concluída.** CSP, varredura axe/responsividade/fonte grande, testes de
   segurança entre famílias, foco nas confirmações.
 ### Fase 8 — Produção, documentação final e implantação
+- **Concluída.** Vercel (gru1) + Supabase (sa-east-1), https://cashly-familia.vercel.app; APK via PWABuilder com assetlinks configurável.
 
 ## 8. Comandos de teste disponíveis
 
