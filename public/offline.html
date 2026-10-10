@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b6b5d">
+<title>Sem conexão — Cashly</title>
+<link rel="icon" href="/icons/icon-192.png">
+<style>
+:root{color-scheme:light;--bg:#f5f7f6;--surface:#fff;--fg:#14201c;--muted:#4b5a55;--border:#d3dcd8;--primary:#0b6b5d;--on-primary:#fff;--focus:#1d4ed8}
+[data-theme="dark"]{color-scheme:dark;--bg:#0d1311;--surface:#151d1a;--fg:#e8efec;--muted:#a3b3ad;--border:#2e3b37;--primary:#3fc7ae;--on-primary:#04201a;--focus:#93c5fd}
+html{font-size:106.25%}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px;box-sizing:border-box}
+main{max-width:28rem;background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;text-align:center}
+img{width:72px;height:72px;border-radius:16px}
+h1{font-size:1.4rem;margin:1rem 0 .5rem}
+p{color:var(--muted);line-height:1.5;margin:.5rem 0}
+button{margin-top:1rem;min-height:48px;padding:0 1.5rem;border:0;border-radius:12px;background:var(--primary);color:var(--on-primary);font-size:1rem;font-weight:600;cursor:pointer}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+</style>
+<script>
+(function(){try{var p=localStorage.getItem("cashly-theme");var d=p==="dark"||((!p||p==="system")&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light")}catch(e){}})();
+</script>
+</head>
+<body>
+<main>
+<img src="/icons/icon-192.png" alt="">
+<h1>Você está sem internet</h1>
+<p>O Cashly precisa de conexão para mostrar e salvar as informações da família.</p>
+<p><strong>Nada é salvo enquanto você estiver sem conexão.</strong> Quando a internet voltar, confira se o que você registrou aparece na lista.</p>
+<button type="button" onclick="location.reload()">Tentar novamente</button>
+</main>
+</body>
+</html>
