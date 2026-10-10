@@ -64,6 +64,23 @@ tests/e2e/               Playwright
 - Um script inline no `<head>` aplica `data-theme` antes da primeira pintura e
   acompanha a mudança do sistema operacional no modo automático.
 
+### Autenticação e autorização (Fase 2)
+
+- Supabase Auth com e-mail e senha, uma conta por pessoa, vinculada a uma
+  família (`household_members`). Sessão em cookies via `@supabase/ssr`.
+- `src/proxy.ts`: renova a sessão em toda requisição e redireciona quem não
+  entrou para `/entrar?next=...` (destino validado contra redirecionamento aberto).
+- `src/server/session.ts` (DAL): `getSessionUser` (token verificado com
+  `getClaims`), `requireUser`, `requireMember`, `requireOwner`. Toda página e
+  Server Action com dados chama a DAL; o proxy não é a única barreira.
+- O cliente nunca informa `household_id`, papel ou status: vêm da sessão e o
+  banco confere de novo (RLS, FKs compostas, funções).
+- Cache Components continua ligado, mas **nenhum dado da família usa
+  `use cache`**; leituras de sessão ficam atrás de `<Suspense>` e as respostas
+  usam `Cache-Control: private, no-store`.
+- Erros do Supabase são traduzidos (`src/server/errors.ts`); logs registram
+  só o código do erro, sem e-mail, valores ou tokens.
+
 ### Segurança (Fase 1)
 
 - Cabeçalhos: `X-Content-Type-Options`, `X-Frame-Options: DENY`,
@@ -81,3 +98,6 @@ tests/e2e/               Playwright
 | Fontes do sistema | Sem requisição externa no build ou no carregamento; boa legibilidade |
 | Playwright 1.56.1 | Casa com o Chromium disponível no ambiente de CI/desenvolvimento |
 | 4 abas no celular, "Ajustes" no cabeçalho | Rótulos inteiros e legíveis em 360 px |
+| Uma família por conta | Simplifica o app para o caso de uso; restrição removível no banco |
+| Formulários com Server Actions + `useActionState` | Funcionam sem JS pesado; React Hook Form fica para formulários complexos (Fase 3+) |
+| Testes de RLS em PostgreSQL local com réplica do `auth` | Isolados do projeto real e sem Docker |

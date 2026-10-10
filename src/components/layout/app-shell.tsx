@@ -1,12 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ConnectionStatus } from "@/components/pwa/connection-status";
 import { ThemeQuickToggle } from "@/components/theme/theme-quick-toggle";
 import { BottomNav, SettingsLink, SideNav } from "./app-nav";
+import { MembershipGate } from "./membership-gate";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
+      <Suspense>
+        <MembershipGate />
+      </Suspense>
       <a
         href="#conteudo"
         className="sr-only z-50 rounded-xl bg-primary px-4 py-3 text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3"

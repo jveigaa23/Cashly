@@ -175,7 +175,7 @@ arquivos alterados, decisões e próximos passos.
 - [x] Vitest e Playwright configurados com testes da fundação.
 - [x] README, `.env.example`, documentação de arquitetura e PWA.
 
-### Fase 2 — Banco, autenticação e segurança (requer projeto Supabase)
+### Fase 2 — Banco, autenticação e segurança — concluída (ver docs/supabase.md)
 - Migrações SQL de todas as tabelas, constraints, índices e RLS.
 - Funções auxiliares `is_household_member(household_id)`.
 - Supabase Auth (e-mail + senha, recuperação por e-mail), sessões via
@@ -270,3 +270,21 @@ Serviços externos e custos potenciais:
 8. Nenhuma tela exibe dados financeiros simulados como se fossem reais: as
    seções ainda não implementadas informam explicitamente a fase em que
    chegam.
+
+## Decisões após a Fase 1
+
+- **Supabase**: projeto `cashly` criado na organização do usuário, plano
+  gratuito, região São Paulo (autorizado em 10/10/2026).
+- **Login**: contas individuais por pessoa, ligadas à mesma família (aprovado).
+- **Hospedagem e APK (recomendação, a confirmar na Fase 8)**:
+  - Hospedar o app na **Vercel (plano Hobby, gratuito, HTTPS)**.
+  - Gerar um **APK Android por TWA (Trusted Web Activity)** com Bubblewrap ou
+    PWABuilder: um app Android “de verdade” que abre o Cashly hospedado em tela
+    cheia, com ícone na gaveta de apps do Samsung. Exige publicar
+    `/.well-known/assetlinks.json` e guardar a chave de assinatura do APK.
+  - Distribuição: instalar o APK direto no celular (permitir “instalar apps
+    desconhecidos” uma vez) ou publicar na Play Store (taxa única de US$ 25).
+  - Alternativa sem APK: “Instalar app” no Chrome/Samsung Internet já cria um
+    ícone de app no Samsung (WebAPK).
+  - O APK continua dependendo do app hospedado: atualizações chegam sem
+    reinstalar.

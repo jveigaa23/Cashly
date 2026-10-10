@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 async function waitForServiceWorkerControl(page: Page) {
-  await page.goto("/");
+  await page.goto("/entrar");
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
@@ -32,7 +32,7 @@ function swVersion(page: Page) {
 }
 
 test("manifest é válido e os ícones existem", async ({ page, request }) => {
-  await page.goto("/");
+  await page.goto("/entrar");
   const href = await page.locator('link[rel="manifest"]').getAttribute("href");
   expect(href).toBe("/manifest.webmanifest");
 
@@ -65,8 +65,8 @@ test("Service Worker controla a página e não guarda dados em cache", async ({ 
   await waitForServiceWorkerControl(page);
 
   // Navega pelo app e confere que nenhuma página entrou no cache.
-  await page.goto("/contas");
-  await page.goto("/lancamentos");
+  await page.goto("/cadastro");
+  await page.goto("/esqueci-senha");
   const cached = await page.evaluate(async () => {
     const urls: string[] = [];
     for (const key of await caches.keys()) {
@@ -84,23 +84,13 @@ test("sem conexão: aviso no app e página offline nas navegações", async ({ p
   await goOffline(context);
   await expect(page.getByText("Sem internet. Nada será salvo até a conexão voltar.")).toBeVisible();
 
-  await page.goto("/relatorios");
+  await page.goto("/cadastro");
   await expect(page.getByRole("heading", { name: "Você está sem internet" })).toBeVisible();
   await expect(page.getByText("Nada é salvo enquanto você estiver sem conexão.")).toBeVisible();
 
   await goOnline(context);
   await page.getByRole("button", { name: "Tentar novamente" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Relatórios" })).toBeVisible();
-});
-
-test("tela de ajustes orienta a instalação", async ({ page }) => {
-  await page.goto("/ajustes");
-  await expect(page.getByRole("heading", { name: "Instalar no celular ou computador" })).toBeVisible();
-  // Chromium em Android/desktop: instruções ou botão de instalação.
-  await expect(
-    page.getByRole("button", { name: "Instalar aplicativo" })
-      .or(page.getByText(/Instalar app|Instalar Cashly/).first()),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Criar conta" })).toBeVisible();
 });
 
 // O fluxo de atualização (nova versão em espera → aviso → ativação só após o

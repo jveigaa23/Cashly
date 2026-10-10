@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { Greeting } from "@/components/layout/greeting";
 import { ComingSoon } from "@/components/layout/coming-soon";
-import { PageHeader } from "@/components/layout/page-header";
 import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -8,16 +9,18 @@ import { StatusBadge } from "@/components/ui/status-badge";
 export default function HomePage() {
   return (
     <>
-      <PageHeader
-        title="Início"
-        description="Resumo das finanças da família."
-      />
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold sm:text-3xl">Início</h1>
+        <Suspense fallback={<p className="mt-1 text-muted">&nbsp;</p>}>
+          <Greeting />
+        </Suspense>
+      </div>
 
       <div className="space-y-4">
         <ComingSoon phase={5}>
           O painel com saldo registrado, contas a pagar, parcelas e gráficos
           será liberado depois que o cadastro de contas e lançamentos estiver
-          pronto. Nenhum valor é exibido aqui até existirem dados reais.
+          pronto (Fase 3). Nenhum valor é exibido aqui até existirem dados reais.
         </ComingSoon>
 
         <Card aria-labelledby="como-ler">
@@ -43,7 +46,7 @@ export default function HomePage() {
         </Card>
 
         <Link href="/ajustes" className={buttonClasses({ variant: "secondary" })}>
-          Instalar o app e escolher a aparência
+          Convidar a família, instalar o app e escolher a aparência
         </Link>
       </div>
     </>
