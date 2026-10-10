@@ -14,6 +14,11 @@ publica uma nova versão. Os aparelhos mostram "Nova versão disponível" e
 atualizam ao tocar em "Atualizar". Para voltar a uma versão anterior:
 Vercel → projeto → Deployments → versão anterior → "Instant Rollback".
 
+Versões diferentes abertas no celular: `deploymentId` (= `VERCEL_DEPLOYMENT_ID`)
+faz o Next recarregar a página quando detecta uma versão antiga, e a chave
+fixa das Server Actions evita o erro "Failed to find Server Action" em
+formulários abertos durante um deploy.
+
 ## Proteção do projeto na Vercel
 
 "Vercel Authentication" vale só para as prévias e URLs internas de cada
@@ -30,7 +35,8 @@ deploy; o endereço de produção é público (o app tem login próprio).
 | `VAPID_PRIVATE_KEY` | **sensível**, só produção | configurada (gerada para este projeto) |
 | `VAPID_SUBJECT` | pública | URL do app |
 | `CRON_SECRET` | **sensível**, só produção | configurada (gerada para este projeto) |
-| `SUPABASE_SECRET_KEY` | **sensível**, só produção | **pendente — o responsável cadastra** (ver abaixo) |
+| `SUPABASE_SECRET_KEY` | **sensível**, só produção | configurada pelo responsável |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | **sensível** | configurada: mantém formulários abertos válidos depois de um redeploy |
 | `ANDROID_PACKAGE_NAME`, `ANDROID_CERT_SHA256` | públicas | opcionais — só para o APK (ver abaixo) |
 
 Variáveis `NEXT_PUBLIC_*` e as do Android entram no build: depois de mudar,

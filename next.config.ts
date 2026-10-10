@@ -40,6 +40,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Na Vercel, cada deploy tem um id: se o navegador estiver com uma versão
+  // antiga aberta, o Next recarrega a página em vez de quebrar formulários.
+  deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
