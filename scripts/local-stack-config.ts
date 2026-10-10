@@ -28,4 +28,7 @@ export const LOCAL_APP_ENV = {
   NEXT_PUBLIC_SITE_URL: LOCAL_SITE_URL,
   // Testes não dependem do serviço externo de senhas vazadas.
   PASSWORD_LEAK_CHECK: "off",
+  // Vínculo do app Android (valores de teste; o certificado real vem do PWABuilder).
+  ANDROID_PACKAGE_NAME: "app.cashly.teste",
+  ANDROID_CERT_SHA256: Array.from({ length: 32 }, () => "AB").join(":"),
 };

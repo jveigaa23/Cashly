@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Tudo, exceto arquivos estáticos, ícones, manifest, SW, página offline e o
-    // agendador (protegido por CRON_SECRET, sem sessão de usuário).
-    "/((?!_next/static|_next/image|api/cron/|icons/|manifest.webmanifest|sw.js|offline.html|icon.svg|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // agendador (protegido por CRON_SECRET, sem sessão de usuário) e o
+    // .well-known (vínculo do app Android, público por definição).
+    "/((?!_next/static|_next/image|api/cron/|\\.well-known/|icons/|manifest.webmanifest|sw.js|offline.html|icon.svg|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

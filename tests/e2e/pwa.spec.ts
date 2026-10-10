@@ -101,3 +101,13 @@ test("Service Worker responde à versão atual", async ({ page }) => {
   await waitForServiceWorkerControl(page);
   expect(await swVersion(page)).toBe("2");
 });
+
+test("vínculo do app Android (assetlinks.json) é público e válido", async ({ request }) => {
+  const res = await request.get("/.well-known/assetlinks.json");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("application/json");
+  const [link] = await res.json();
+  expect(link.relation).toEqual(["delegate_permission/common.handle_all_urls"]);
+  expect(link.target).toMatchObject({ namespace: "android_app", package_name: "app.cashly.teste" });
+  expect(link.target.sha256_cert_fingerprints[0]).toMatch(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/);
+});
