@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { toCalendarDate, type CalendarDate } from "@/lib/format/date";
 import { createClient } from "@/lib/supabase/server";
 import { logServerError } from "./errors";
 
@@ -80,4 +81,9 @@ export async function requireOwner(): Promise<Membership> {
   const membership = await requireMember();
   if (membership.role !== "owner") redirect("/ajustes");
   return membership;
+}
+
+/** "Hoje" no fuso da família (instante de referência injetável para testes). */
+export function todayFor(membership: Pick<Membership, "timezone">, now: Date = new Date()): CalendarDate {
+  return toCalendarDate(now, membership.timezone);
 }

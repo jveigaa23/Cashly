@@ -95,3 +95,30 @@ export function toCalendarDate(
   const get = (type: string) => parts.find((p) => p.type === type)?.value;
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
+
+/** Dias de calendário de `from` até `to` (positivo se `to` é depois). */
+export function daysBetween(from: CalendarDate, to: CalendarDate): number {
+  assertCalendarDate(from);
+  assertCalendarDate(to);
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
+}
+
+/** Primeiro e último dia do mês "AAAA-MM". */
+export function monthRange(month: string): { start: CalendarDate; end: CalendarDate } {
+  const match = /^(\d{4})-(\d{2})$/.exec(month);
+  if (!match) throw new RangeError(`Mês inválido: ${month}`);
+  const [y, m] = [Number(match[1]), Number(match[2])];
+  if (m < 1 || m > 12) throw new RangeError(`Mês inválido: ${month}`);
+  const mm = String(m).padStart(2, "0");
+  return { start: `${y}-${mm}-01`, end: `${y}-${mm}-${String(daysInMonth(y, m)).padStart(2, "0")}` };
+}
+
+/** "2026-10" ± n meses. */
+export function addMonths(month: string, delta: number): string {
+  const { start } = monthRange(month);
+  const [y, m] = start.split("-").map(Number);
+  const index = y * 12 + (m - 1) + delta;
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
+}

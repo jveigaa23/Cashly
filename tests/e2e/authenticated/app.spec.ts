@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { requireTestAccount, signIn } from "./session";
+import { createAccount, signIn } from "./session";
 
 test.describe("com login", () => {
-  requireTestAccount();
-  test.beforeEach(async ({ page }) => signIn(page));
+  test.beforeEach(async ({ page }) => signIn(page, await createAccount({ name: "Maria" })));
 
   test("navegação principal, sem rolagem horizontal e sem rótulos cortados", async ({ page }) => {
-    await expect(page.getByText(/^Olá, .+! Família .+\.$/)).toBeVisible();
+    await expect(page.getByText("Olá, Maria! Família Família Maria.")).toBeVisible();
     const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true });
     await nav.getByRole("link", { name: "Contas" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Contas a pagar" })).toBeVisible();
@@ -22,7 +21,7 @@ test.describe("com login", () => {
   });
 
   test("seções não implementadas não exibem valores simulados", async ({ page }) => {
-    for (const path of ["/", "/contas", "/lancamentos", "/relatorios"]) {
+    for (const path of ["/", "/relatorios"]) {
       await page.goto(path);
       await expect(page.getByText(/Em construção — chega na Fase \d/)).toBeVisible();
       await expect(page.locator("main")).not.toContainText("R$");
@@ -30,6 +29,7 @@ test.describe("com login", () => {
   });
 
   test("link para pular ao conteúdo é o primeiro foco do teclado", async ({ page }) => {
+    await page.goto("/");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Pular para o conteúdo" })).toBeFocused();
   });

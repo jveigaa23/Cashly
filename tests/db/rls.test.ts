@@ -186,11 +186,20 @@ describe("autorização dentro da família", () => {
   });
 
   it("autor do registro é definido pelo servidor, não pelo cliente", async () => {
+    await expect(
+      as(db, { user: alice }, (q) =>
+        q(
+          `insert into transactions (household_id, type, amount, occurred_on, description, created_by)
+           values ($1, 'income', 10, '2026-10-01', 'teste', $2)`,
+          [familyA, bob.id],
+        ),
+      ),
+    ).rejects.toThrow(/permission denied/);
     const { rows } = await as(db, { user: alice }, (q) =>
       q(
-        `insert into transactions (household_id, type, amount, occurred_on, description, created_by)
-         values ($1, 'income', 10, '2026-10-01', 'teste', $2) returning created_by`,
-        [familyA, bob.id],
+        `insert into transactions (household_id, type, amount, occurred_on, description)
+         values ($1, 'income', 10, '2026-10-01', 'teste') returning created_by`,
+        [familyA],
       ),
     );
     expect(rows[0].created_by).toBe(alice.id);

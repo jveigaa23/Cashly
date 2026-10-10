@@ -1,42 +1,29 @@
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { credentials } from "./session";
+import { signIn } from "./session";
 
-/**
- * Fluxo completo: dono cria a família, convida; o convidado aceita.
- * Requer DUAS contas confirmadas e SEM família, em ambiente de TESTE:
- *   E2E_EMAIL / E2E_PASSWORD (dono)  e  E2E_INVITEE_EMAIL / E2E_INVITEE_PASSWORD
- * Consome as contas (depois disso elas têm família): rode antes da suíte app.spec.
- */
-const invitee = {
-  email: process.env.E2E_INVITEE_EMAIL ?? "",
-  password: process.env.E2E_INVITEE_PASSWORD ?? "",
-};
+/** Fluxo completo pela interface: cadastro → família → convite → aceite. */
+test("cadastro, criação da família, convite e entrada do segundo responsável", async ({ page, context }) => {
+  const owner = { email: `dono-${randomUUID()}@exemplo.test`, password: "Senha-segura-1" };
+  const invitee = { email: `conv-${randomUUID()}@exemplo.test`, password: "Senha-segura-2" };
 
-test.describe.configure({ mode: "serial" });
-
-test("dono cria a família, convida e o convidado entra", async ({ page, context }, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "Fluxo consome as contas: roda uma vez só.");
-  test.skip(
-    !credentials.email || !invitee.email,
-    "Defina E2E_EMAIL/E2E_PASSWORD e E2E_INVITEE_EMAIL/E2E_INVITEE_PASSWORD (contas de TESTE sem família).",
-  );
-
-  // Dono entra: sem família, vai para o cadastro inicial.
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(credentials.email);
-  await page.getByLabel("Senha", { exact: true }).fill(credentials.password);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  // Cadastro (a pilha local confirma o e-mail automaticamente).
+  await page.goto("/cadastro");
+  await page.getByLabel("Seu nome").fill("Dona Ana");
+  await page.getByLabel("E-mail").fill(owner.email);
+  await page.getByLabel("Senha", { exact: true }).fill(owner.password);
+  await page.getByLabel("Repita a senha").fill(owner.password);
+  await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/bem-vindo$/);
 
-  // Validação do servidor.
+  // Validação do servidor e criação da família.
   await page.getByLabel("Nome da família").fill("   ");
   await page.getByRole("button", { name: "Criar família" }).click();
   await expect(page.getByText("Dê um nome para a família.")).toBeVisible();
-
-  await page.getByLabel("Nome da família").fill("Família E2E");
-  await page.getByLabel("Como você quer ser chamado(a)").fill("Dono E2E");
+  await page.getByLabel("Nome da família").fill("Silva");
+  await expect(page.getByLabel("Como você quer ser chamado(a)")).toHaveValue("Dona Ana");
   await page.getByRole("button", { name: "Criar família" }).click();
-  await expect(page.getByText("Olá, Dono E2E! Família Família E2E.")).toBeVisible();
+  await expect(page.getByText("Olá, Dona Ana! Família Silva.")).toBeVisible();
 
   // Convite.
   await page.goto("/ajustes");
@@ -45,35 +32,43 @@ test("dono cria a família, convida e o convidado entra", async ({ page, context
   const link = await page.getByLabel("Link do convite").inputValue();
   expect(link).toMatch(/\/convite\/[0-9a-f]{64}$/);
   await page.reload();
-  await expect(page.getByText(invitee.email.toLowerCase())).toBeVisible();
-
+  await expect(page.getByText(invitee.email)).toBeVisible();
   await page.getByRole("button", { name: "Sair desta conta" }).click();
   await expect(page).toHaveURL(/\/entrar$/);
 
-  // Convidado abre o link, entra e aceita.
+  // Convidado abre o link, cria a conta e aceita.
   const invitePath = new URL(link).pathname;
   await page.goto(invitePath);
-  await page.getByRole("link", { name: /Já tenho conta/ }).click();
+  await page.getByRole("link", { name: "Criar conta" }).click();
+  await page.getByLabel("Seu nome").fill("Seu João");
   await page.getByLabel("E-mail").fill(invitee.email);
   await page.getByLabel("Senha", { exact: true }).fill(invitee.password);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByLabel("Repita a senha").fill(invitee.password);
+  await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(new RegExp(`${invitePath}$`));
-  await page.getByLabel("Como você quer ser chamado(a)").fill("Convidado E2E");
   await page.getByRole("button", { name: "Aceitar convite" }).click();
-  await expect(page.getByText("Olá, Convidado E2E! Família Família E2E.")).toBeVisible();
+  await expect(page.getByText("Olá, Seu João! Família Silva.")).toBeVisible();
 
-  // O convidado vê a família, mas não pode convidar.
+  // O convidado vê a família, mas não convida.
   await page.goto("/ajustes");
-  await expect(page.getByText("Dono E2E")).toBeVisible();
+  await expect(page.getByText("Dona Ana")).toBeVisible();
   await expect(page.getByLabel("E-mail da pessoa")).toHaveCount(0);
 
-  // Link já usado não funciona de novo.
+  // O link usado não serve para mais ninguém.
   await context.clearCookies();
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(credentials.email);
-  await page.getByLabel("Senha", { exact: true }).fill(credentials.password);
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByText("Olá, Dono E2E!", { exact: false })).toBeVisible();
+  const stranger = { email: `x-${randomUUID()}@exemplo.test`, password: "Senha-segura-3" };
+  await page.goto(`/cadastro?next=${encodeURIComponent(invitePath)}`);
+  await page.getByLabel("Seu nome").fill("Estranho");
+  await page.getByLabel("E-mail").fill(stranger.email);
+  await page.getByLabel("Senha", { exact: true }).fill(stranger.password);
+  await page.getByLabel("Repita a senha").fill(stranger.password);
+  await page.getByRole("button", { name: "Criar conta" }).click();
+  await page.getByRole("button", { name: "Aceitar convite" }).click();
+  await expect(page.getByText(/Este convite não é mais válido/)).toBeVisible();
+
+  // E a dona vê os dois membros.
+  await context.clearCookies();
+  await signIn(page, owner);
   await page.goto("/ajustes");
-  await expect(page.getByText("Convidado E2E")).toBeVisible();
+  await expect(page.getByText("Seu João")).toBeVisible();
 });

@@ -18,13 +18,15 @@ Versionadas em `supabase/migrations/` e aplicadas em ordem:
 | `20261010160000_households.sql` | Famílias, membros, convites, funções de autorização (`private.*`), RPCs |
 | `20261010160100_financial_schema.sql` | Contas, categorias, recorrências, contas a pagar, parcelas, pagamentos, lançamentos, orçamentos + RLS |
 | `20261010160200_notifications_audit.sql` | Preferências e entregas de avisos, inscrições push, histórico de alterações |
+| `20261010180000_bills_payments_rules.sql` | Fase 3: pagamentos e cancelamentos atômicos (RPC), status protegidos, idempotência (`request_id`), tipo de categoria |
 
 Como aplicar em um projeto novo: SQL Editor do painel (colar cada arquivo em
 ordem) ou `supabase db push` com a CLI ligada ao projeto.
 
 **Conferir que o banco remoto é igual às migrações**: rode
 `supabase/tests/schema-fingerprint.sql` no SQL Editor e no banco local de
-teste; os hashes devem coincidir. (Conferido em 10/10/2026: idênticos.)
+teste; os hashes devem coincidir. (Conferido em 10/10/2026 após a migração
+0004: idênticos.)
 
 Após cada migração, regenere `src/lib/supabase/database.types.ts`.
 
@@ -47,11 +49,31 @@ Após cada migração, regenere `src/lib/supabase/database.types.ts`.
 8. `notification_deliveries` só é criado pelo agendador (service role).
 9. O app usa só a chave *publishable* + sessão do usuário; a chave secreta
    nunca vai para o navegador.
+10. Status de contas, cancelamentos e pagamentos só mudam por funções
+    (`register_bill_payment`, `cancel_bill_payment`, `cancel_bill`,
+    `cancel_transaction`) que bloqueiam as linhas (`FOR UPDATE`) e fazem tudo
+    numa transação: pagamento + despesa vinculada + novo status.
+11. Cada pagamento gera exatamente uma despesa (`transactions.bill_payment_id`
+    único); contas pendentes nunca são somadas como despesa.
+12. `request_id` (gerado pelo formulário) torna reenvios idempotentes.
 
 Avisos do Security Advisor: as 4 funções `SECURITY DEFINER` acima são
 chamáveis por usuários logados **de propósito**; cada uma faz a própria
 verificação e há testes para isso. Os avisos de desempenho (FKs sem índice
 dedicado) são irrelevantes no volume de uma família.
+
+## Pilha local e testes de integração
+
+`pnpm stack:local` sobe PostgreSQL temporário + GoTrue v2.180 (Auth) +
+PostgREST v14.1 com um gateway em `http://127.0.0.1:54321` (`/auth/v1`,
+`/rest/v1`), igual à API do Supabase. Segredos fixos de teste ficam em
+`scripts/local-stack-config.ts` (não usar em produção). Os binários são
+baixados do GitHub na primeira vez e guardados em `node_modules/.cache`.
+
+- `pnpm test:integration`: consultas e ações do servidor contra o PostgREST
+  real (sessão e cache do Next simulados).
+- `pnpm test:e2e`: build apontando para a pilha local + Playwright com
+  cadastro/login reais (e-mails confirmados automaticamente).
 
 ## Testes do banco (isolados)
 
@@ -71,6 +93,7 @@ Nunca toca o projeto real. Requer PostgreSQL 15+ instalado (ou `PG_BIN`).
 | Site URL | URL de produção (`https://...`) | **pendente: hospedagem** |
 | Redirect URLs | `https://<prod>/auth/callback`, `http://localhost:3000/auth/callback` | **pendente** |
 | SMTP próprio | ex.: Resend, Brevo, Amazon SES | **pendente — ver abaixo** |
+| Proteção contra senhas vazadas (HaveIBeenPwned) | ligada | pendente (aviso do Security Advisor; pode exigir plano pago) |
 
 **SMTP é necessário para uso real.** O envio padrão do Supabase só entrega
 e-mails para membros da equipe da organização e tem limite baixo por hora.

@@ -21,6 +21,9 @@ beforeAll(async () => {
 afterAll(async () => drop());
 
 const run = (sql: string, params: unknown[] = []) => as(db, { user }, (q) => q(sql, params));
+// Restrições estruturais: testadas sem as barreiras da API, para provar que o
+// próprio banco recusa dados inválidos mesmo vindos de funções internas.
+const raw = (sql: string, params: unknown[] = []) => as(db, "service_role", (q) => q(sql, params));
 
 describe("integridade financeira no banco", () => {
   it("valores devem ser positivos", async () => {
@@ -45,7 +48,7 @@ describe("integridade financeira no banco", () => {
 
   it("cancelamento exige data de cancelamento", async () => {
     await expect(
-      run(
+      raw(
         "insert into bills (household_id, name, original_amount, due_date, status) values ($1, 'Água', 50, '2026-10-10', 'canceled')",
         [household],
       ),
@@ -66,20 +69,20 @@ describe("integridade financeira no banco", () => {
       await run("insert into bills (household_id, name, original_amount, due_date) values ($1, 'Luz', 100, '2026-10-10') returning id", [household])
     ).rows[0].id;
     await expect(
-      run(
+      raw(
         "insert into bill_payments (household_id, bill_id, paid_on, amount, principal_amount, charges_amount) values ($1, $2, '2026-10-10', 100, 90, 5)",
         [household, bill],
       ),
     ).rejects.toThrow(/check constraint/);
     await expect(
-      run(
+      raw(
         "insert into bill_payments (household_id, paid_on, amount, principal_amount) values ($1, '2026-10-10', 100, 100)",
         [household],
       ),
     ).rejects.toThrow(/check constraint/);
 
     const payment = (
-      await run(
+      await raw(
         "insert into bill_payments (household_id, bill_id, paid_on, amount, principal_amount, charges_amount) values ($1, $2, '2026-10-12', 102.5, 100, 2.5) returning id",
         [household, bill],
       )
@@ -87,8 +90,8 @@ describe("integridade financeira no banco", () => {
 
     // Uma única despesa por pagamento (sem dupla contagem).
     const expense = "insert into transactions (household_id, type, amount, occurred_on, description, bill_payment_id) values ($1, 'expense', 102.5, '2026-10-12', 'Luz', $2)";
-    await run(expense, [household, payment]);
-    await expect(run(expense, [household, payment])).rejects.toThrow(/unique/);
+    await raw(expense, [household, payment]);
+    await expect(raw(expense, [household, payment])).rejects.toThrow(/unique/);
   });
 
   it("recorrência não gera duplicata para a mesma data", async () => {
@@ -99,8 +102,8 @@ describe("integridade financeira no banco", () => {
       )
     ).rows[0].id;
     const insert = "insert into bills (household_id, name, original_amount, due_date, recurrence_rule_id, recurrence_date) values ($1, 'Aluguel', 1500, '2026-02-28', $2, '2026-02-28')";
-    await run(insert, [household, rule]);
-    await expect(run(insert, [household, rule])).rejects.toThrow(/unique/);
+    await raw(insert, [household, rule]);
+    await expect(raw(insert, [household, rule])).rejects.toThrow(/unique/);
   });
 
   it("parcelas: número único por plano", async () => {

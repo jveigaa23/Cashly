@@ -10,10 +10,12 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "next build && playwright test",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:db",
+    "test:e2e": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/e2e.ts",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:integration",
     "icons": "node scripts/generate-icons.mjs",
-    "test:db": "vitest run -c vitest.db.config.mts"
+    "test:db": "vitest run -c vitest.db.config.mts",
+    "test:integration": "vitest run -c vitest.integration.config.mts",
+    "stack:local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/local-stack.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

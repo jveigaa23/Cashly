@@ -139,3 +139,8 @@ export function decimalToCents(value: string | number): number {
   assertCents(cents);
   return sign ? -cents : cents;
 }
+
+/** 123456 → "1.234,56" (para preencher campos de formulário). */
+export function formatAmountInput(cents: number): string {
+  return formatBRL(cents).replace(/^-?R\$\s*/, "");
+}

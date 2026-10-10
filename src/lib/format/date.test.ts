@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  addMonths,
+  daysBetween,
   daysInMonth,
   formatCalendarDate,
   formatDateTime,
   formatMonthYear,
   isCalendarDate,
   isLeapYear,
+  monthRange,
   toCalendarDate,
 } from "./date";
 
@@ -60,5 +63,28 @@ describe("fusos horários", () => {
     expect(formatDateTime(instant)).toBe("09/10/2026 23:30");
     expect(formatDateTime("2026-10-10T15:00:00Z", "UTC")).toBe("10/10/2026 15:00");
     expect(() => formatDateTime("não é data")).toThrow(RangeError);
+  });
+});
+
+
+describe("aritmética de calendário", () => {
+  it("daysBetween atravessa meses, anos e fevereiro bissexto", () => {
+    expect(daysBetween("2026-10-10", "2026-10-10")).toBe(0);
+    expect(daysBetween("2026-10-10", "2026-10-09")).toBe(-1);
+    expect(daysBetween("2024-02-28", "2024-03-01")).toBe(2);
+    expect(daysBetween("2025-02-28", "2025-03-01")).toBe(1);
+    expect(daysBetween("2026-12-31", "2027-01-01")).toBe(1);
+    // Horário de verão não existe mais no Brasil, mas o cálculo independe de fuso.
+    expect(daysBetween("2018-11-03", "2018-11-05")).toBe(2);
+  });
+
+  it("monthRange e addMonths", () => {
+    expect(monthRange("2024-02")).toEqual({ start: "2024-02-01", end: "2024-02-29" });
+    expect(monthRange("2026-02")).toEqual({ start: "2026-02-01", end: "2026-02-28" });
+    expect(monthRange("2026-12")).toEqual({ start: "2026-12-01", end: "2026-12-31" });
+    expect(() => monthRange("2026-13")).toThrow(RangeError);
+    expect(addMonths("2026-12", 1)).toBe("2027-01");
+    expect(addMonths("2026-01", -1)).toBe("2025-12");
+    expect(addMonths("2026-10", -12)).toBe("2025-10");
   });
 });

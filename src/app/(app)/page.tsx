@@ -4,6 +4,7 @@ import { Greeting } from "@/components/layout/greeting";
 import { ComingSoon } from "@/components/layout/coming-soon";
 import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
+import { PlusIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export default function HomePage() {
@@ -17,10 +18,21 @@ export default function HomePage() {
       </div>
 
       <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Link href="/lancamentos/novo?tipo=despesa" className={buttonClasses({ size: "lg" })}>
+            <PlusIcon /> Despesa
+          </Link>
+          <Link href="/lancamentos/novo?tipo=receita" className={buttonClasses({ size: "lg", variant: "secondary" })}>
+            <PlusIcon /> Receita
+          </Link>
+          <Link href="/contas/nova" className={buttonClasses({ size: "lg", variant: "secondary" })}>
+            <PlusIcon /> Conta a pagar
+          </Link>
+        </div>
+
         <ComingSoon phase={5}>
           O painel com saldo registrado, contas a pagar, parcelas e gráficos
-          será liberado depois que o cadastro de contas e lançamentos estiver
-          pronto (Fase 3). Nenhum valor é exibido aqui até existirem dados reais.
+          chega na Fase 5. Por enquanto, acompanhe em “Contas” e “Lançamentos”.
         </ComingSoon>
 
         <Card aria-labelledby="como-ler">

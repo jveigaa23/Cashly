@@ -8,7 +8,12 @@ export interface TestUser {
 }
 
 /** Cria um banco próprio para o arquivo de teste a partir do modelo migrado. */
-export async function createTestDatabase(): Promise<{ db: Client; drop: () => Promise<void> }> {
+export async function createTestDatabase(): Promise<{
+  db: Client;
+  drop: () => Promise<void>;
+  /** Abre outra conexão ao mesmo banco (para testes de concorrência). */
+  connect: () => Promise<Client>;
+}> {
   const port = inject("pgPort");
   const name = `t_${randomUUID().replace(/-/g, "")}`;
   const admin = new Client({ host: "127.0.0.1", port, user: "postgres", database: "postgres" });
@@ -16,9 +21,17 @@ export async function createTestDatabase(): Promise<{ db: Client; drop: () => Pr
   await admin.query(`create database ${name} template cashly_template`);
   const db = new Client({ host: "127.0.0.1", port, user: "postgres", database: name });
   await db.connect();
+  const extra: Client[] = [];
   return {
     db,
+    connect: async () => {
+      const c = new Client({ host: "127.0.0.1", port, user: "postgres", database: name });
+      await c.connect();
+      extra.push(c);
+      return c;
+    },
     drop: async () => {
+      await Promise.all(extra.map((c) => c.end()));
       await db.end();
       await admin.query(`drop database ${name}`);
       await admin.end();

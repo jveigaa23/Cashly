@@ -1,29 +1,49 @@
-import { expect, test, type Page } from "@playwright/test";
+import { randomUUID } from "node:crypto";
+import { expect, type Page } from "@playwright/test";
+import { LOCAL_ANON_KEY, LOCAL_SUPABASE_URL } from "../../../scripts/local-stack-config.ts";
 
 /**
- * Suíte com login. Roda SOMENTE contra um ambiente de teste isolado
- * (projeto/stack Supabase de testes) com um usuário já confirmado e com
- * família criada, informado por variáveis:
- *   E2E_EMAIL, E2E_PASSWORD
- * Sem elas, os testes aparecem como "skipped" com o motivo — nunca como aprovados.
- * NUNCA use a conta de uma pessoa real da família.
+ * Contas criadas na hora, na pilha Supabase LOCAL (dados descartáveis).
+ * Nunca usa contas reais.
  */
-export const credentials = {
-  email: process.env.E2E_EMAIL ?? "",
-  password: process.env.E2E_PASSWORD ?? "",
-};
-
-export function requireTestAccount() {
-  test.skip(
-    !credentials.email || !credentials.password,
-    "Defina E2E_EMAIL e E2E_PASSWORD de uma conta em ambiente de TESTE isolado.",
-  );
+export interface Account {
+  email: string;
+  password: string;
+  name: string;
+  token: string;
 }
 
-export async function signIn(page: Page) {
+const headers = (token = LOCAL_ANON_KEY) => ({
+  apikey: LOCAL_ANON_KEY,
+  Authorization: `Bearer ${token}`,
+  "Content-Type": "application/json",
+});
+
+export async function createAccount({ name = "Teste", family = true }: { name?: string; family?: boolean } = {}): Promise<Account> {
+  const email = `e2e-${randomUUID()}@exemplo.test`;
+  const password = `Senha-${randomUUID().slice(0, 8)}`;
+  const res = await fetch(`${LOCAL_SUPABASE_URL}/auth/v1/signup`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({ email, password, data: { display_name: name } }),
+  });
+  if (!res.ok) throw new Error(`signup falhou: ${res.status} ${await res.text()}`);
+  const { access_token: token } = (await res.json()) as { access_token: string };
+  if (family) {
+    const rpc = await fetch(`${LOCAL_SUPABASE_URL}/rest/v1/rpc/create_household`, {
+      method: "POST",
+      headers: headers(token),
+      body: JSON.stringify({ p_name: `Família ${name}`, p_display_name: name }),
+    });
+    if (!rpc.ok) throw new Error(`create_household falhou: ${rpc.status} ${await rpc.text()}`);
+  }
+  return { email, password, name, token };
+}
+
+export async function signIn(page: Page, account: Pick<Account, "email" | "password">, expectHome = true) {
   await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(credentials.email);
-  await page.getByLabel("Senha", { exact: true }).fill(credentials.password);
+  await page.getByLabel("E-mail").fill(account.email);
+  await page.getByLabel("Senha", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Início" })).toBeVisible();
+  if (expectHome) await expect(page.getByRole("heading", { level: 1, name: "Início" })).toBeVisible();
 }

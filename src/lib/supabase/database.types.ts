@@ -123,6 +123,7 @@ export type Database = {
           note: string | null
           paid_on: string
           principal_amount: number
+          request_id: string | null
           updated_at: string
         }
         Insert: {
@@ -139,6 +140,7 @@ export type Database = {
           note?: string | null
           paid_on: string
           principal_amount: number
+          request_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -155,6 +157,7 @@ export type Database = {
           note?: string | null
           paid_on?: string
           principal_amount?: number
+          request_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -857,6 +860,7 @@ export type Database = {
           payment_method: string | null
           recurrence_date: string | null
           recurrence_rule_id: string | null
+          request_id: string | null
           status: string
           type: string
           updated_at: string
@@ -879,6 +883,7 @@ export type Database = {
           payment_method?: string | null
           recurrence_date?: string | null
           recurrence_rule_id?: string | null
+          request_id?: string | null
           status?: string
           type: string
           updated_at?: string
@@ -901,6 +906,7 @@ export type Database = {
           payment_method?: string | null
           recurrence_date?: string | null
           recurrence_rule_id?: string | null
+          request_id?: string | null
           status?: string
           type?: string
           updated_at?: string
@@ -956,7 +962,32 @@ export type Database = {
         Args: { p_display_name: string; p_name: string }
         Returns: string
       }
+      cancel_bill: {
+        Args: { p_bill_id: string; p_reason: string }
+        Returns: undefined
+      }
+      cancel_bill_payment: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: undefined
+      }
+      cancel_transaction: {
+        Args: { p_reason: string; p_transaction_id: string }
+        Returns: undefined
+      }
       create_household_invite: { Args: { p_email: string }; Returns: string }
+      register_bill_payment: {
+        Args: {
+          p_account_id?: string
+          p_amount: number
+          p_bill_id: string
+          p_charges_amount?: number
+          p_note?: string
+          p_paid_on: string
+          p_payment_method?: string
+          p_request_id?: string
+        }
+        Returns: string
+      }
       revoke_household_invite: {
         Args: { p_invite_id: string }
         Returns: undefined

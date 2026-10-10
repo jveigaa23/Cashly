@@ -26,7 +26,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="flex items-center gap-1">
             <ThemeQuickToggle />
-            <SettingsLink />
+            <Suspense fallback={<SettingsLink pathname="" />}>
+              <SettingsLink />
+            </Suspense>
           </div>
         </div>
         <ConnectionStatus />
@@ -35,7 +37,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 pb-28 pt-4 md:pb-8">
         <aside className="hidden w-56 shrink-0 md:block">
           <div className="sticky top-24">
-            <SideNav />
+            <Suspense fallback={<SideNav pathname="" />}>
+              <SideNav />
+            </Suspense>
           </div>
         </aside>
         <main id="conteudo" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
@@ -43,7 +47,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      <BottomNav />
+      <Suspense fallback={<BottomNav pathname="" />}>
+        <BottomNav />
+      </Suspense>
     </div>
   );
 }

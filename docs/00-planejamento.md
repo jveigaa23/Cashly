@@ -184,7 +184,7 @@ arquivos alterados, decisões e próximos passos.
 - Testes de RLS (acesso entre famílias negado) em banco de teste isolado.
 - Aceite: usuário de outra família recebe 0 linhas/erro em todas as tabelas.
 
-### Fase 3 — Contas, despesas, receitas e pagamentos manuais
+### Fase 3 — Contas, despesas, receitas e pagamentos manuais — concluída
 - Módulo `domain/money` (centavos, arredondamento half-even/half-up documentado).
 - CRUD com Server Actions validadas (Zod); cancelamento em vez de exclusão.
 - Pagamento explícito com confirmação, parcial ou total, em RPC atômica que

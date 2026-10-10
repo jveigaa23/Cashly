@@ -81,6 +81,20 @@ tests/e2e/               Playwright
 - Erros do Supabase são traduzidos (`src/server/errors.ts`); logs registram
   só o código do erro, sem e-mail, valores ou tokens.
 
+### Domínio financeiro (Fase 3)
+
+- `src/domain/bills.ts`: saldo, situação derivada (a vencer, vence hoje,
+  vencida, paga em parte, paga, cancelada), dias de atraso e validação de
+  pagamento. `today` sempre injetado.
+- `src/domain/transactions.ts`: totais separando realizado e previsto,
+  ignorando cancelados.
+- O banco aplica as mesmas regras nas funções; a interface valida antes para
+  dar mensagens claras (inclusive na etapa de revisão do pagamento).
+- `src/server/finance/queries.ts`: leituras com `::text` nos NUMERIC (sem float).
+- `src/server/finance/actions.ts`: Server Actions com Zod + domínio + RPC.
+- Despesa de pagamento de conta é criada automaticamente; por isso “Nova
+  despesa” orienta a usar “Registrar pagamento” na conta.
+
 ### Segurança (Fase 1)
 
 - Cabeçalhos: `X-Content-Type-Options`, `X-Frame-Options: DENY`,
@@ -101,3 +115,5 @@ tests/e2e/               Playwright
 | Uma família por conta | Simplifica o app para o caso de uso; restrição removível no banco |
 | Formulários com Server Actions + `useActionState` | Funcionam sem JS pesado; React Hook Form fica para formulários complexos (Fase 3+) |
 | Testes de RLS em PostgreSQL local com réplica do `auth` | Isolados do projeto real e sem Docker |
+| Pilha Supabase local (GoTrue + PostgREST binários) para integração/E2E | Testes com login reais sem tocar o projeto real nem depender de Docker |
+| Formulários sem React Hook Form | Formulários simples; Server Actions + `useActionState` bastam |

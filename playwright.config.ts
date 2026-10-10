@@ -1,11 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
+import { LOCAL_APP_PORT } from "./scripts/local-stack-config";
 
 // Permite interceptar a rede do Service Worker (necessário para simular
 // falta de conexão: `setOffline` não se aplica às requisições do SW).
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = "1";
 
-const PORT = Number(process.env.E2E_PORT ?? 3100);
-const baseURL = `http://localhost:${PORT}`;
+// Sempre contra a pilha Supabase LOCAL e isolada (scripts/local-stack.ts).
+const baseURL = `http://localhost:${LOCAL_APP_PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -27,11 +28,14 @@ export default defineConfig({
     },
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
-  // O Service Worker só é registrado no build de produção.
+  // Build de produção (SW ativo) feito por scripts/e2e.ts com as variáveis
+  // da pilha local; aqui sobem a pilha (Postgres + Auth + REST) e o app.
   webServer: {
-    command: `pnpm start --port ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    command: "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/local-stack.ts --app",
+    url: `${baseURL}/entrar`,
+    reuseExistingServer: false,
+    timeout: 180_000,
+    stdout: "ignore",
+    stderr: "pipe",
   },
 });

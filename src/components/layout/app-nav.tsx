@@ -6,9 +6,19 @@ import { SettingsIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { BOTTOM_NAV_ITEMS, NAV_ITEMS, isActive } from "./nav-items";
 
-/** Navegação inferior fixa (celular). */
-export function BottomNav() {
-  const pathname = usePathname();
+/**
+ * Com `pathname` fixo (fallback do Suspense, sem página destacada) não lê a
+ * URL; caso contrário usa usePathname(). A regra dos hooks é respeitada
+ * porque cada instância usa sempre o mesmo caminho.
+ */
+function usePathnameSafe(fixed: string | undefined): string {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return fixed ?? usePathname();
+}
+
+/** Navegação inferior fixa (celular). Sem `pathname`, lê a rota atual. */
+export function BottomNav({ pathname: fixed }: { pathname?: string } = {}) {
+  const pathname = usePathnameSafe(fixed);
   return (
     <nav
       aria-label="Navegação principal"
@@ -41,8 +51,8 @@ export function BottomNav() {
 }
 
 /** Navegação lateral (tablet e computador). */
-export function SideNav() {
-  const pathname = usePathname();
+export function SideNav({ pathname: fixed }: { pathname?: string } = {}) {
+  const pathname = usePathnameSafe(fixed);
   return (
     <nav aria-label="Navegação principal" className="hidden md:block">
       <ul className="space-y-1">
@@ -72,8 +82,8 @@ export function SideNav() {
 }
 
 /** Atalho para Ajustes no cabeçalho (apenas celular). */
-export function SettingsLink() {
-  const pathname = usePathname();
+export function SettingsLink({ pathname: fixed }: { pathname?: string } = {}) {
+  const pathname = usePathnameSafe(fixed);
   const active = isActive(pathname, "/ajustes");
   return (
     <Link
