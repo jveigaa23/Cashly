@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Money } from "@/components/finance/money";
+import { ScrollIntoView } from "@/components/finance/scroll-into-view";
 import { LoadingCard } from "@/components/layout/loading-card";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { TRANSACTION_STATUS_LABEL } from "@/domain/transactions";
 import { cn } from "@/lib/cn";
 import { addMonths, formatCalendarDate, formatMonthYear } from "@/lib/format/date";
+import { formatBRL } from "@/lib/format/money";
 import { ensureRecurrences, listCategories, listTransactions } from "@/server/finance/queries";
 import { requireMember, todayFor } from "@/server/session";
 
@@ -39,6 +41,8 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
     listCategories("expense"),
   ]);
   const filtered = Boolean(type || q || categoryId);
+  // Lançamento recém-salvo (vem do redirect após "Salvar"): destaque na lista.
+  const saved = typeof params.salvo === "string" ? items.find((t) => t.id === params.salvo) : undefined;
   const href = (next: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
     const merged = { mes: month, tipo: type, busca: q || undefined, categoria: categoryId, ...next };
@@ -52,9 +56,19 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
         <Notice tone="success" role="status" title="Lançamento mensal cadastrado." className="mb-4">
           Ele aparece todo mês como previsto. Quando acontecer, abra e marque como recebido/pago.
         </Notice>
+      ) : saved ? (
+        <Notice
+          tone="success"
+          role="status"
+          title={`${saved.type === "income" ? "Receita salva" : "Despesa salva"}: ${saved.description} — ${formatBRL(saved.amountCents)}`}
+          className="mb-4"
+        >
+          Ela está em destaque na lista abaixo.
+        </Notice>
       ) : typeof params.salvo === "string" ? (
         <Notice tone="success" role="status" title="Lançamento salvo." className="mb-4" />
       ) : null}
+      {saved ? <ScrollIntoView targetId={`lancamento-${saved.id}`} /> : null}
       {!generated.ok ? (
         <Notice tone="warning" role="alert" title="Não foi possível criar os lançamentos repetidos agora." className="mb-4">
           Os lançamentos já cadastrados estão corretos. Tente de novo em instantes.
@@ -144,9 +158,16 @@ async function TransactionsList({ searchParams }: { searchParams: PageProps<"/la
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((t) => (
-            <li key={t.id}>
-              <Link href={`/lancamentos/${t.id}`} className="flex flex-wrap items-start justify-between gap-2 rounded-2xl border border-border bg-surface p-4 hover:bg-surface-muted">
+            <li key={t.id} id={`lancamento-${t.id}`} className="scroll-mt-24">
+              <Link
+                href={`/lancamentos/${t.id}`}
+                className={cn(
+                  "flex flex-wrap items-start justify-between gap-2 rounded-2xl border bg-surface p-4 hover:bg-surface-muted",
+                  saved?.id === t.id ? "border-2 border-primary" : "border-border",
+                )}
+              >
                 <div className="min-w-0">
+                  {saved?.id === t.id ? <StatusBadge tone="success" className="mb-1">Novo</StatusBadge> : null}
                   <p className="text-lg font-semibold break-words">{t.description}</p>
                   <p className="text-muted">
                     {formatCalendarDate(t.occurredOn)}

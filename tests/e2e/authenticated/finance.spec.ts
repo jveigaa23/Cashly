@@ -77,7 +77,8 @@ test("lançamentos: receita prevista, despesa paga, totais e cancelamento", asyn
   await page.getByLabel("Valor (R$)").fill("1.518,00");
   await page.getByLabel("Categoria").selectOption({ label: "Aposentadoria" });
   await page.getByRole("button", { name: "Salvar receita" }).click();
-  await expect(page.getByText("Lançamento salvo.")).toBeVisible();
+  await expect(page.getByText("Receita salva: Aposentadoria — R$ 1.518,00")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Tipo" }).getByRole("link", { name: "Receitas" })).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("link", { name: "Despesa" }).first().click();
   await expect(page.getByRole("heading", { level: 1, name: "Nova despesa" })).toBeVisible();
@@ -85,8 +86,17 @@ test("lançamentos: receita prevista, despesa paga, totais e cancelamento", asyn
   await page.getByLabel("Valor (R$)").fill("87,35");
   await page.getByLabel("Data").fill(today());
   await page.getByRole("button", { name: "Salvar despesa" }).click();
-  await expect(page.getByText("Lançamento salvo.")).toBeVisible();
 
+  // Depois de salvar: direto na aba Despesas, com a despesa nova em destaque.
+  await expect(page.getByText("Despesa salva: Feira — R$ 87,35")).toBeVisible();
+  await expect(page).toHaveURL(/tipo=expense/);
+  await expect(page.getByRole("list", { name: "Tipo" }).getByRole("link", { name: "Despesas" })).toHaveAttribute("aria-current", "page");
+  const fresh = page.getByRole("listitem").filter({ hasText: "Feira" });
+  await expect(fresh).toContainText("Novo");
+  await expect(fresh).toBeInViewport();
+  await expect(page.getByRole("link", { name: /Aposentadoria/ })).toHaveCount(0);
+
+  await page.getByRole("list", { name: "Tipo" }).getByRole("link", { name: "Todos" }).click();
   const totals = page.locator("section", { has: page.getByRole("heading", { name: "Totais do mês" }) });
   await expect(totals).toContainText("Receitas recebidasR$ 0,00");
   await expect(totals).toContainText("Despesas pagasR$ 87,35");

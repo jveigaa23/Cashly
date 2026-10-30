@@ -100,6 +100,8 @@ test("receita mensal entra como prevista", async ({ page }) => {
   await page.getByRole("button", { name: "Salvar receita" }).click();
   await expect(page.getByText("Lançamento mensal cadastrado.")).toBeVisible();
   await expect(page.getByRole("link", { name: /Aposentadoria/ }).first()).toContainText("Prevista");
-  const totals = page.locator("section", { has: page.getByRole("heading", { name: "Totais do mês" }) });
+  // Abre direto na aba Receitas.
+  await expect(page.getByRole("list", { name: "Tipo" }).getByRole("link", { name: "Receitas" })).toHaveAttribute("aria-current", "page");
+  const totals = page.locator("section", { has: page.getByRole("heading", { name: "Totais deste filtro" }) });
   await expect(totals).toContainText("Receitas recebidasR$ 0,00");
 });

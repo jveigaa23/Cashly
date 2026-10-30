@@ -258,7 +258,7 @@ export async function createTransactionAction(_prev: FormState, form: FormData):
     });
     if (error) return dbError("createRecurringTransaction", error, v);
     revalidatePath("/lancamentos");
-    redirect(`/lancamentos?mes=${t.occurredOn.slice(0, 7)}&salvo=recorrente`);
+    redirect(`/lancamentos?mes=${t.occurredOn.slice(0, 7)}&tipo=${t.type}&salvo=recorrente`);
   }
 
   const { data, error } = await supabase
@@ -291,7 +291,8 @@ export async function createTransactionAction(_prev: FormState, form: FormData):
   }
 
   revalidatePath("/lancamentos");
-  redirect(`/lancamentos?mes=${t.occurredOn.slice(0, 7)}&salvo=${id}`);
+  // Abre direto na aba do tipo salvo (Despesas/Receitas), com o item novo em destaque.
+  redirect(`/lancamentos?mes=${t.occurredOn.slice(0, 7)}&tipo=${t.type}&salvo=${id}`);
 }
 
 export async function updateTransactionAction(txId: string, _prev: FormState, form: FormData): Promise<FormState> {

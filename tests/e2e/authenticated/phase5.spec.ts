@@ -11,7 +11,7 @@ async function addTransaction(page: Page, kind: "Receita" | "Despesa", descripti
   await page.getByLabel("Data").fill(today());
   await page.getByLabel("Categoria").selectOption({ label: category });
   await page.getByRole("button", { name: `Salvar ${kind.toLowerCase()}` }).click();
-  await expect(page.getByText("Lançamento salvo.")).toBeVisible();
+  await expect(page.getByText(`${kind} salva: ${description}`, { exact: false })).toBeVisible();
 }
 
 async function noHorizontalScroll(page: Page) {
