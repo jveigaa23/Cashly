@@ -1,5 +1,5 @@
 -- Impressão digital do schema da aplicação. Rodar no banco local de teste e no
--- projeto Supabase: os hashes devem coincidir (garante que o remoto = migrações).
+-- projeto Neon: os hashes devem coincidir (garante que o remoto = migrações).
 with parts as (
   select 'col' as k, string_agg(format('%s.%s:%s:%s:%s', table_name, column_name, data_type, is_nullable, coalesce(column_default, '')), '|' order by table_name, column_name) as v
   from information_schema.columns where table_schema = 'public'
@@ -19,15 +19,15 @@ with parts as (
   select 'idx', string_agg(indexdef, '|' order by indexname) from pg_indexes where schemaname = 'public'
   union all
   select 'grant', string_agg(format('%s:%s:%s', grantee, table_name, privilege_type), '|' order by grantee, table_name, privilege_type)
-  from information_schema.role_table_grants where table_schema = 'public' and grantee in ('anon', 'authenticated')
+  from information_schema.role_table_grants where table_schema = 'public' and grantee in ('anonymous', 'authenticated')
   union all
   select 'colgrant', string_agg(format('%s:%s.%s:%s', grantee, table_name, column_name, privilege_type), '|' order by grantee, table_name, column_name, privilege_type)
-  from information_schema.column_privileges where table_schema = 'public' and grantee in ('anon', 'authenticated')
+  from information_schema.column_privileges where table_schema = 'public' and grantee in ('anonymous', 'authenticated')
     and (table_name, privilege_type) not in (select table_name, privilege_type from information_schema.role_table_grants g where g.table_schema = 'public' and g.grantee = column_privileges.grantee)
   union all
   select 'exec', string_agg(format('%s:%s', r.rolname, p.proname), '|' order by r.rolname, p.proname)
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-  cross join (select rolname from pg_roles where rolname in ('anon', 'authenticated')) r
+  cross join (select rolname from pg_roles where rolname in ('anonymous', 'authenticated')) r
   where n.nspname in ('public', 'private') and has_function_privilege(r.rolname, p.oid, 'execute')
 )
 select k, md5(coalesce(v, '')) as hash from parts order by k;

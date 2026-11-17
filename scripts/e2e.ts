@@ -1,13 +1,15 @@
 /**
- * Executa os testes E2E contra a pilha Supabase LOCAL (nunca o projeto real):
- * 1. build do app com as variáveis da pilha local;
- * 2. Playwright (o webServer sobe a pilha + `next start`).
+ * Executa os testes E2E contra uma branch de TESTE do Neon (nunca a main):
+ * 1. build do app com as variáveis da branch;
+ * 2. Playwright (o webServer sobe `next start`).
  * Argumentos extras vão para o Playwright: `pnpm test:e2e --project=mobile`.
  */
 import { execFileSync } from "node:child_process";
-import { LOCAL_APP_ENV } from "./local-stack-config.ts";
+import { e2eAppEnv } from "./e2e-config.ts";
 
-const env = { ...process.env, ...LOCAL_APP_ENV };
+const appEnv = e2eAppEnv();
+// O mesmo segredo no build e no `next start` (sessões válidas entre os dois).
+const env = { ...process.env, ...appEnv, E2E_NEON_AUTH_COOKIE_SECRET: appEnv.NEON_AUTH_COOKIE_SECRET };
 const run = (cmd: string, args: string[]) => execFileSync(cmd, args, { env, stdio: "inherit" });
 
 try {

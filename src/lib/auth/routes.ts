@@ -1,5 +1,5 @@
 /** Páginas acessíveis sem login (a rota exata e tudo abaixo dela). */
-const PUBLIC_ROUTES = ["/entrar", "/cadastro", "/esqueci-senha", "/auth", "/convite"];
+const PUBLIC_ROUTES = ["/entrar", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/convite"];
 
 /** Páginas só para quem ainda não entrou (quem já entrou vai ao início). */
 const GUEST_ONLY_ROUTES = ["/entrar", "/cadastro", "/esqueci-senha"];

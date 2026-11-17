@@ -10,7 +10,7 @@ describe("configuração dos canais", () => {
     expect(pushConfig({ NEXT_PUBLIC_VAPID_PUBLIC_KEY: "a", VAPID_PRIVATE_KEY: "b", VAPID_SUBJECT: "mailto:x@y" })).toEqual({ publicKey: "a", privateKey: "b", subject: "mailto:x@y" });
   });
   it("agendador lista os nomes do que falta, nunca valores", () => {
-    expect(schedulerMissing({ CRON_SECRET: "curto" })).toEqual(["CRON_SECRET", "SUPABASE_SECRET_KEY", "NEXT_PUBLIC_VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT"]);
+    expect(schedulerMissing({ CRON_SECRET: "curto" })).toEqual(["CRON_SECRET", "DATABASE_URL", "NEXT_PUBLIC_VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT"]);
   });
   it("WhatsApp nunca aparece como configurado nesta versão", () => {
     expect(whatsappStatus({}).configured).toBe(false);

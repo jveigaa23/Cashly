@@ -59,7 +59,7 @@ create table public.households (
   timezone text not null default 'America/Sao_Paulo',
   is_demo boolean not null default false,
   archived_at timestamptz,
-  created_by uuid default auth.uid() references auth.users (id) on delete set null,
+  created_by uuid default auth.uid() references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -96,7 +96,7 @@ create trigger households_updated_at before update on public.households
 create table public.household_members (
   id uuid primary key default gen_random_uuid(),
   household_id uuid not null references public.households (id) on delete restrict,
-  user_id uuid not null references auth.users (id) on delete cascade,
+  user_id uuid not null references neon_auth."user" (id) on delete cascade,
   role text not null default 'member' check (role in ('owner', 'member')),
   display_name text not null check (char_length(btrim(display_name)) between 1 and 60),
   created_at timestamptz not null default now(),
@@ -173,9 +173,9 @@ create table public.household_invites (
   token_hash text not null unique,
   expires_at timestamptz not null,
   accepted_at timestamptz,
-  accepted_by uuid references auth.users (id) on delete set null,
+  accepted_by uuid references neon_auth."user" (id) on delete set null,
   revoked_at timestamptz,
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   check (not (accepted_at is not null and revoked_at is not null))
 );
@@ -212,9 +212,9 @@ create policy "dono vê convites" on public.household_invites
   for select to authenticated
   using (household_id in (select private.user_owned_household_ids()));
 
--- Privilégios: nada para anon; inserções em membros/convites só via funções.
+-- Privilégios: nada para anonymous; inserções em membros/convites só via funções.
 revoke all on table public.households, public.household_members, public.household_invites
-  from anon, authenticated;
+  from anonymous, authenticated;
 grant select on table public.households, public.household_members, public.household_invites
   to authenticated;
 grant update (name, timezone) on table public.households to authenticated;
@@ -289,7 +289,7 @@ begin
 
   if exists (
     select 1 from public.household_members m
-    join auth.users u on u.id = m.user_id
+    join neon_auth."user" u on u.id = m.user_id
     where lower(u.email) = v_email
   ) then
     raise exception 'already_member' using errcode = 'P0001';
@@ -391,10 +391,10 @@ begin
 end;
 $$;
 
-revoke all on function public.create_household(text, text) from public, anon;
-revoke all on function public.create_household_invite(text) from public, anon;
-revoke all on function public.revoke_household_invite(uuid) from public, anon;
-revoke all on function public.accept_household_invite(text, text) from public, anon;
+revoke all on function public.create_household(text, text) from public, anonymous;
+revoke all on function public.create_household_invite(text) from public, anonymous;
+revoke all on function public.revoke_household_invite(uuid) from public, anonymous;
+revoke all on function public.accept_household_invite(text, text) from public, anonymous;
 grant execute on function public.create_household(text, text) to authenticated;
 grant execute on function public.create_household_invite(text) to authenticated;
 grant execute on function public.revoke_household_invite(uuid) to authenticated;

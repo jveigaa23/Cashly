@@ -58,7 +58,7 @@ describe("saldo registrado", () => {
 
   it("cada família vê só o próprio saldo", async () => {
     expect(await balance("2030-01-01", stranger)).toBe("0");
-    await expect(as(db, "anon", (q) => q("select public.registered_balance('2030-01-01')"))).rejects.toThrow(/permission denied/);
+    await expect(as(db, "anonymous", (q) => q("select public.registered_balance('2030-01-01')"))).rejects.toThrow(/permission denied/);
   });
 });
 

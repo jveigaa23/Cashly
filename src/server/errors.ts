@@ -1,10 +1,13 @@
 /**
- * Tradução de erros do Supabase/Postgres para mensagens claras.
+ * Tradução de erros do Neon Auth/Postgres para mensagens claras.
  * Nunca repassar a mensagem técnica para a tela, nem registrar dados sensíveis.
  */
 
 const AUTH_MESSAGES: Record<string, string> = {
-  invalid_credentials: "E-mail ou senha incorretos.",
+  invalid_credentials:
+    "E-mail ou senha incorretos. Se sua conta foi criada antes de 17/11/2026, crie uma nova senha em “Esqueci minha senha”.",
+  user_already_exists: "Já existe uma conta com esse e-mail. Use “Entrar” ou “Esqueci minha senha”.",
+  invalid_token: "Este link de nova senha expirou ou já foi usado. Peça um novo em “Esqueci minha senha”.",
   email_not_confirmed: "Confirme seu e-mail antes de entrar. Procure a mensagem do Cashly na sua caixa de entrada.",
   weak_password: "Senha muito fraca. Use uma senha mais longa, misturando letras e números.",
   same_password: "A nova senha precisa ser diferente da atual.",
@@ -15,6 +18,35 @@ const AUTH_MESSAGES: Record<string, string> = {
   session_not_found: "Sua sessão expirou. Entre novamente.",
   otp_expired: "O link expirou. Peça um novo.",
 };
+
+/** Erro do Neon Auth (Better Auth): `code` em MAIÚSCULAS e `status` HTTP. */
+export interface AuthError {
+  code?: string;
+  status?: number;
+  message?: string;
+}
+
+const BETTER_AUTH_CODES: Record<string, string> = {
+  INVALID_EMAIL_OR_PASSWORD: "invalid_credentials",
+  CREDENTIAL_ACCOUNT_NOT_FOUND: "invalid_credentials",
+  USER_ALREADY_EXISTS: "user_already_exists",
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "user_already_exists",
+  INVALID_EMAIL: "email_address_invalid",
+  PASSWORD_TOO_SHORT: "weak_password",
+  PASSWORD_TOO_LONG: "weak_password",
+  INVALID_PASSWORD: "invalid_password",
+  INVALID_TOKEN: "invalid_token",
+  EMAIL_NOT_VERIFIED: "email_not_confirmed",
+  SESSION_EXPIRED: "session_not_found",
+};
+
+/** Converte o erro do Neon Auth para o código usado nas mensagens (sem dados pessoais). */
+export function authErrorCode(error: AuthError | null | undefined): string {
+  if (!error) return "desconhecido";
+  if (error.status === 429) return "over_request_rate_limit";
+  const code = error.code ? BETTER_AUTH_CODES[error.code] : undefined;
+  return code ?? (error.code ? error.code.toLowerCase() : `http_${error.status ?? "desconhecido"}`);
+}
 
 export function authErrorMessage(code: string | undefined): string {
   return (code && AUTH_MESSAGES[code]) || "Não foi possível concluir agora. Tente de novo em instantes.";

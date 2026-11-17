@@ -7,7 +7,7 @@ import type { RecurrenceRule } from "@/domain/recurrence";
 import { totalsOf, type PeriodTotals, type TransactionStatus, type TransactionType } from "@/domain/transactions";
 import { monthRange, type CalendarDate } from "@/lib/format/date";
 import { decimalToCents } from "@/lib/format/money";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "../errors";
 import type { Membership } from "../session";
 
@@ -35,8 +35,8 @@ export interface Option {
 }
 
 export async function listCategories(kind: "income" | "expense"): Promise<Option[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("categories")
     .select("id, name")
     .eq("kind", kind)
@@ -47,8 +47,8 @@ export async function listCategories(kind: "income" | "expense"): Promise<Option
 }
 
 export async function listAccounts(): Promise<Option[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("accounts").select("id, name").is("archived_at", null).order("name");
+  const db = await createClient();
+  const { data, error } = await db.from("accounts").select("id, name").is("archived_at", null).order("name");
   if (error) fail("listAccounts", error);
   return data;
 }
@@ -188,8 +188,8 @@ export async function listBills(
   filter: { view: BillView; q?: string; sort: BillSort },
   today: CalendarDate,
 ): Promise<{ items: BillListItem[]; truncated: boolean }> {
-  const supabase = await createClient();
-  let query = supabase.from("bills").select(BILL_COLUMNS);
+  const db = await createClient();
+  let query = db.from("bills").select(BILL_COLUMNS);
 
   if (filter.view === "open") query = query.in("status", ["pending", "partially_paid"]);
   if (filter.view === "overdue") query = query.in("status", ["pending", "partially_paid"]).lt("due_date", today);
@@ -235,8 +235,8 @@ export interface BillDetail extends BillListItem {
 }
 
 export async function getBill(id: string, today: CalendarDate): Promise<BillDetail | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("bills")
     .select(BILL_COLUMNS)
     .eq("id", id)
@@ -344,8 +344,8 @@ export async function listTransactions(
   filter: TransactionFilter,
 ): Promise<{ items: TransactionItem[]; totals: PeriodTotals; truncated: boolean }> {
   const { start, end } = monthRange(filter.month);
-  const supabase = await createClient();
-  let query = supabase.from("transactions").select(TX_COLUMNS).gte("occurred_on", start).lte("occurred_on", end);
+  const db = await createClient();
+  let query = db.from("transactions").select(TX_COLUMNS).gte("occurred_on", start).lte("occurred_on", end);
   if (filter.type) query = query.eq("type", filter.type);
   if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
   if (filter.q?.trim()) query = query.ilike("description", likePattern(filter.q.trim()));
@@ -364,8 +364,8 @@ export async function listTransactions(
 }
 
 export async function getTransaction(id: string): Promise<TransactionItem | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("transactions")
     .select(TX_COLUMNS)
     .eq("id", id)
@@ -390,16 +390,16 @@ export interface HistoryEntry {
 
 export async function getHistory(entityIds: string[], membership: Membership): Promise<HistoryEntry[]> {
   if (entityIds.length === 0) return [];
-  const supabase = await createClient();
+  const db = await createClient();
   const [log, members] = await Promise.all([
-    supabase
+    db
       .from("audit_log")
       .select("id, at, entity, action, actor_id, changes")
       .in("entity_id", entityIds)
       .order("at", { ascending: false })
       .order("id", { ascending: false })
       .limit(100),
-    supabase.from("household_members").select("user_id, display_name").eq("household_id", membership.householdId),
+    db.from("household_members").select("user_id, display_name").eq("household_id", membership.householdId),
   ]);
   if (log.error) fail("getHistory", log.error);
   if (members.error) fail("getHistory members", members.error);
@@ -424,8 +424,8 @@ export async function getHistory(entityIds: string[], membership: Membership): P
  * telas de contas/lançamentos/início. Falha é informada, nunca escondida.
  */
 export async function ensureRecurrences(): Promise<{ ok: boolean }> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("generate_recurrences");
+  const db = await createClient();
+  const { error } = await db.rpc("generate_recurrences");
   if (error) {
     logServerError("generate_recurrences", error);
     return { ok: false };
@@ -533,8 +533,8 @@ function toPlan(row: PlanRow, today: CalendarDate): PlanView {
 }
 
 export async function listPlans(today: CalendarDate, view: "active" | "all" = "active"): Promise<PlanView[]> {
-  const supabase = await createClient();
-  let query = supabase.from("installment_plans").select(PLAN_COLUMNS);
+  const db = await createClient();
+  let query = db.from("installment_plans").select(PLAN_COLUMNS);
   if (view === "active") query = query.eq("status", "active");
   const { data, error } = await query.order("created_at", { ascending: false }).limit(LIST_LIMIT).overrideTypes<PlanRow[], { merge: false }>();
   if (error) fail("listPlans", error);
@@ -542,8 +542,8 @@ export async function listPlans(today: CalendarDate, view: "active" | "all" = "a
 }
 
 export async function getPlan(id: string, today: CalendarDate): Promise<PlanView | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("installment_plans")
     .select(PLAN_COLUMNS)
     .eq("id", id)

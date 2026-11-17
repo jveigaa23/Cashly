@@ -49,10 +49,10 @@ describe("configuração", () => {
     expect(rows).toEqual([]);
   });
 
-  it("anon não tem nenhum privilégio em tabelas", async () => {
+  it("anonymous não tem nenhum privilégio em tabelas", async () => {
     const { rows } = await db.query(
       `select table_name, privilege_type from information_schema.role_table_grants
-       where grantee = 'anon' and table_schema = 'public'`,
+       where grantee = 'anonymous' and table_schema = 'public'`,
     );
     expect(rows).toEqual([]);
   });
@@ -75,14 +75,14 @@ describe("configuração", () => {
   });
 });
 
-describe("visitante sem login (anon)", () => {
+describe("visitante sem login (anonymous)", () => {
   it.each(["households", "transactions", "bills", "household_members"])("não lê %s", async (table) => {
-    await expect(as(db, "anon", (q) => q(`select * from ${table}`))).rejects.toThrow(/permission denied/);
+    await expect(as(db, "anonymous", (q) => q(`select * from ${table}`))).rejects.toThrow(/permission denied/);
   });
 
   it("não executa funções da aplicação", async () => {
     await expect(
-      as(db, "anon", (q) => q("select public.create_household('X', 'Y')")),
+      as(db, "anonymous", (q) => q("select public.create_household('X', 'Y')")),
     ).rejects.toThrow(/permission denied/);
   });
 });

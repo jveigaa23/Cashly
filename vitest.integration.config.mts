@@ -1,6 +1,6 @@
 import { defineConfig } from "vitest/config";
 
-// Integração: supabase-js + PostgREST real + PostgreSQL temporário (isolado).
+// Integração: postgrest-js + PostgREST real + PostgreSQL temporário (isolado).
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
@@ -10,5 +10,8 @@ export default defineConfig({
     testTimeout: 20_000,
     hookTimeout: 120_000,
     fileParallelism: false,
+    // O SDK do Neon Auth importa "next/headers" sem extensão; processado pelo
+    // Vite, o import resolve como no Next.
+    server: { deps: { inline: ["@neon/auth"] } },
   },
 });

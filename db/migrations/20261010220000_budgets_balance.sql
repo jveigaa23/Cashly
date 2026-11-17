@@ -43,5 +43,5 @@ as $$
     ), 0);
 $$;
 
-revoke all on function public.registered_balance(date) from public, anon;
+revoke all on function public.registered_balance(date) from public, anonymous;
 grant execute on function public.registered_balance(date) to authenticated;

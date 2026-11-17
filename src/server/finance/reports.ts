@@ -12,7 +12,7 @@ import {
 } from "@/domain/reports";
 import { addDays, addMonths, monthRange, type CalendarDate } from "@/lib/format/date";
 import { decimalToCents } from "@/lib/format/money";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "../errors";
 
 /**
@@ -39,10 +39,10 @@ export interface ReportTx extends TxFact {
 
 /** Todos os lançamentos não cancelados do intervalo, paginando. */
 export async function loadTransactions(start: CalendarDate, end: CalendarDate): Promise<ReportTx[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const rows: ReportTx[] = [];
   for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("transactions")
       .select("id, type, status, amount::text, occurred_on, description, payment_method, category_id, bill_payment_id, categories(name)")
       .gte("occurred_on", start)
@@ -82,8 +82,8 @@ export async function loadTransactions(start: CalendarDate, end: CalendarDate): 
 }
 
 export async function registeredBalance(until: CalendarDate): Promise<number> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("registered_balance", { p_until: until });
+  const db = await createClient();
+  const { data, error } = await db.rpc("registered_balance", { p_until: until });
   if (error) fail("registeredBalance", error);
   return decimalToCents(String(data));
 }
@@ -104,8 +104,8 @@ export async function loadBudgets(
   plannedBillsByMonthCategory: Map<string, number>,
 ): Promise<BudgetRow[]> {
   if (months.length === 0) return [];
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("budgets")
     .select("id, month, category_id, limit_amount::text, alert_percent, categories(name)")
     .gte("month", `${months[0]}-01`)
@@ -150,9 +150,9 @@ export interface ObligationItem {
 
 /** Contas e parcelas EM ABERTO (não é dinheiro gasto: são obrigações). */
 export async function loadOpenObligations(): Promise<ObligationItem[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [bills, installments] = await Promise.all([
-    supabase
+    db
       .from("bills")
       .select("id, name, due_date, status, original_amount::text, category_id, bill_payments(principal_amount::text, canceled_at)")
       .in("status", ["pending", "partially_paid"])
@@ -162,7 +162,7 @@ export async function loadOpenObligations(): Promise<ObligationItem[]> {
         { id: string; name: string; due_date: string; status: string; original_amount: string; category_id: string | null; bill_payments: { principal_amount: string; canceled_at: string | null }[] }[],
         { merge: false }
       >(),
-    supabase
+    db
       .from("installments")
       .select("id, number, due_date, expected_amount::text, plan_id, installment_plans!inner(description, installment_count, category_id, status), bill_payments(principal_amount::text, canceled_at)")
       .in("status", ["pending", "partially_paid"])
@@ -283,8 +283,8 @@ export interface BillsReport {
 }
 
 async function loadBillsInPeriod(start: CalendarDate, end: CalendarDate, today: CalendarDate): Promise<BillsReport> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("bills")
     .select("due_date, status, original_amount::text, bill_payments(amount::text, principal_amount::text, charges_amount::text, canceled_at)")
     .gte("due_date", start)
@@ -338,8 +338,8 @@ export interface InstallmentsReport {
 }
 
 async function loadInstallmentsReport(start: CalendarDate, end: CalendarDate, obligations: ObligationItem[]): Promise<InstallmentsReport> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("bill_payments")
     .select("principal_amount::text")
     .not("installment_id", "is", null)

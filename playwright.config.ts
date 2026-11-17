@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
-import { LOCAL_APP_PORT } from "./scripts/local-stack-config";
+import { E2E_APP_PORT, e2eAppEnv } from "./scripts/e2e-config";
 
 // Permite interceptar a rede do Service Worker (necessário para simular
 // falta de conexão: `setOffline` não se aplica às requisições do SW).
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = "1";
 
-// Sempre contra a pilha Supabase LOCAL e isolada (scripts/local-stack.ts).
-const baseURL = `http://localhost:${LOCAL_APP_PORT}`;
+// Sempre contra uma branch de TESTE do Neon (scripts/e2e-config.ts).
+const baseURL = `http://localhost:${E2E_APP_PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -29,9 +29,10 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
   // Build de produção (SW ativo) feito por scripts/e2e.ts com as variáveis
-  // da pilha local; aqui sobem a pilha (Postgres + Auth + REST) e o app.
+  // da branch de teste; aqui sobe o app.
   webServer: {
-    command: "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/local-stack.ts --app",
+    command: `pnpm exec next start --port ${E2E_APP_PORT}`,
+    env: e2eAppEnv(),
     url: `${baseURL}/entrar`,
     reuseExistingServer: false,
     timeout: 180_000,

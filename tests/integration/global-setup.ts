@@ -1,8 +1,8 @@
 /**
  * Ambiente de integração local e isolado: PostgreSQL temporário +
- * PostgREST real (mesmo motor da API do Supabase) + proxy em /rest/v1.
- * Os testes usam supabase-js com JWTs assinados localmente.
- * Nunca acessa o projeto Supabase real.
+ * PostgREST real (mesmo motor do Data API do Neon) + proxy em /rest/v1.
+ * Os testes usam postgrest-js com JWTs assinados localmente.
+ * Nunca acessa o projeto Neon real.
  */
 import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -62,7 +62,7 @@ export default async function setup(project: TestProject) {
     await createMigratedDatabase(pg.port, DB_NAME);
     const admin = new Client({ host: "127.0.0.1", port: pg.port, user: "postgres", database: DB_NAME });
     await admin.connect();
-    await admin.query("create role authenticator noinherit login; grant anon, authenticated, service_role to authenticator;");
+    await admin.query("create role authenticator noinherit login; grant anonymous, authenticated, service_role to authenticator;");
     await admin.end();
 
     const jwtSecret = randomBytes(32).toString("hex");
@@ -71,7 +71,7 @@ export default async function setup(project: TestProject) {
       env: {
         PGRST_DB_URI: `postgres://authenticator@127.0.0.1:${pg.port}/${DB_NAME}`,
         PGRST_DB_SCHEMAS: "public",
-        PGRST_DB_ANON_ROLE: "anon",
+        PGRST_DB_ANON_ROLE: "anonymous",
         PGRST_JWT_SECRET: jwtSecret,
         PGRST_SERVER_HOST: "127.0.0.1",
         PGRST_SERVER_PORT: String(restPort),
@@ -81,7 +81,7 @@ export default async function setup(project: TestProject) {
     });
     await waitFor(`http://127.0.0.1:${restPort}/`);
 
-    // Proxy: o supabase-js chama <url>/rest/v1/...; o PostgREST serve na raiz.
+    // Proxy: o app chama <url>/rest/v1/... (como no Neon); o PostgREST serve na raiz.
     proxy = http.createServer((req, res) => {
       const path = (req.url ?? "/").replace(/^\/rest\/v1/, "") || "/";
       const upstream = http.request(

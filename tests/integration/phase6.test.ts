@@ -1,14 +1,11 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { inject } from "vitest";
-import type { Database } from "@/lib/supabase/database.types";
 import type { Membership } from "@/server/session";
-import { adminDb, clientFor, closeAdminDb, createItUser, signJwt, type ItUser } from "./helpers";
+import { adminDb, clientFor, closeAdminDb, createItUser, serviceDb, type ItUser } from "./helpers";
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const state: { client?: ReturnType<typeof clientFor>; membership?: Membership } = {};
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => state.client }));
+vi.mock("@/lib/db/server", () => ({ createClient: async () => state.client }));
 vi.mock("@/server/session", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/session")>()),
   requireMember: async () => state.membership,
@@ -20,11 +17,7 @@ const actions = await import("@/server/notifications/actions");
 const queries = await import("@/server/notifications/queries");
 const { dispatchPush } = await import("@/server/notifications/dispatch");
 
-const serviceClient = () =>
-  createSupabaseClient<Database>(inject("restUrl"), "chave-publica-de-teste", {
-    global: { headers: { Authorization: `Bearer ${signJwt({ role: "service_role" })}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+const serviceClient = () => serviceDb();
 const CONFIG = { publicKey: "pub", privateKey: "priv", subject: "mailto:teste@exemplo.test" };
 const SUB = (n: number) => ({ endpoint: `https://push.exemplo.test/${n}`, keys: { p256dh: "B".repeat(87), auth: "a".repeat(22) } });
 
@@ -112,7 +105,7 @@ describe("push", () => {
       if (sub.endpoint.endsWith("/3")) throw Object.assign(new Error("gone"), { statusCode: 410 });
       sent.push({ endpoint: sub.endpoint, payload });
     });
-    const r = await dispatchPush(serviceClient(), CONFIG, { send });
+    const r = await dispatchPush(await serviceClient(), CONFIG, { send });
     expect(r).toMatchObject({ enqueued: 1, sent: 1, failed: 0, expiredDevices: 1 });
     expect(sent).toHaveLength(1);
     const payload = JSON.parse(sent[0].payload);
@@ -123,7 +116,7 @@ describe("push", () => {
     expect(`${payload.title} ${payload.body}`).not.toMatch(/R\$|\b80([,.]00)?\b/);
 
     // Idempotente: nada novo para enviar.
-    expect(await dispatchPush(serviceClient(), CONFIG, { send })).toMatchObject({ enqueued: 0, sent: 0 });
+    expect(await dispatchPush(await serviceClient(), CONFIG, { send })).toMatchObject({ enqueued: 0, sent: 0 });
     expect(await queries.countDevices()).toBe(1);
 
     // Falha temporária: fica pendente e desiste após 3 tentativas.
@@ -132,9 +125,9 @@ describe("push", () => {
     const failing = vi.fn(async () => {
       throw Object.assign(new Error("tmp"), { statusCode: 503 });
     });
-    expect(await dispatchPush(serviceClient(), CONFIG, { send: failing })).toMatchObject({ retrying: 1 });
-    expect(await dispatchPush(serviceClient(), CONFIG, { send: failing })).toMatchObject({ retrying: 1 });
-    expect(await dispatchPush(serviceClient(), CONFIG, { send: failing })).toMatchObject({ failed: 1 });
+    expect(await dispatchPush(await serviceClient(), CONFIG, { send: failing })).toMatchObject({ retrying: 1 });
+    expect(await dispatchPush(await serviceClient(), CONFIG, { send: failing })).toMatchObject({ retrying: 1 });
+    expect(await dispatchPush(await serviceClient(), CONFIG, { send: failing })).toMatchObject({ failed: 1 });
     const { rows } = await db.query("select status, attempts, error_code from notification_deliveries where channel = 'push'");
     expect(rows).toEqual([{ status: "failed", attempts: 3, error_code: "push_503" }]);
   });
@@ -151,7 +144,7 @@ describe("rota do agendador", () => {
     const { NextRequest } = await import("next/server");
     const secret = "c".repeat(40);
     vi.stubEnv("CRON_SECRET", secret);
-    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+    vi.stubEnv("DATABASE_URL", "");
     vi.stubEnv("VAPID_PRIVATE_KEY", "");
     const unauthorized = await GET(new NextRequest("http://localhost/api/cron/notificacoes"));
     expect(unauthorized.status).toBe(401);
@@ -161,7 +154,7 @@ describe("rota do agendador", () => {
     expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.status).toBe("not_configured");
-    expect(body.missing).toContain("SUPABASE_SECRET_KEY");
+    expect(body.missing).toContain("DATABASE_URL");
     expect(res.headers.get("cache-control")).toBe("no-store");
     vi.unstubAllEnvs();
   });

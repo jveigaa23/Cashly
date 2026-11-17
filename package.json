@@ -14,12 +14,11 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:integration",
     "icons": "node scripts/generate-icons.mjs",
     "test:db": "vitest run -c vitest.db.config.mts",
-    "test:integration": "vitest run -c vitest.integration.config.mts",
-    "stack:local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/local-stack.ts"
+    "test:integration": "vitest run -c vitest.integration.config.mts"
   },
   "dependencies": {
-    "@supabase/ssr": "0.12.7",
-    "@supabase/supabase-js": "2.117.3",
+    "@neon/auth": "^0.8.2",
+    "@supabase/postgrest-js": "^2.119.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",

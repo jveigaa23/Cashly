@@ -4,7 +4,7 @@
 
 Next.js 16 (App Router, Turbopack, Cache Components) · React 19 · TypeScript
 estrito · Tailwind CSS v4 · Vitest + Testing Library · Playwright.
-Planejado: Supabase (PostgreSQL, Auth, RLS), Zod, React Hook Form, Recharts.
+Neon (PostgreSQL, Neon Auth, Data API + RLS), Zod. Detalhes em [banco.md](banco.md).
 Ver justificativas e versões em [00-planejamento.md](00-planejamento.md).
 
 ## Estrutura
@@ -66,19 +66,23 @@ tests/e2e/               Playwright
 
 ### Autenticação e autorização (Fase 2)
 
-- Supabase Auth com e-mail e senha, uma conta por pessoa, vinculada a uma
-  família (`household_members`). Sessão em cookies via `@supabase/ssr`.
-- `src/proxy.ts`: renova a sessão em toda requisição e redireciona quem não
-  entrou para `/entrar?next=...` (destino validado contra redirecionamento aberto).
-- `src/server/session.ts` (DAL): `getSessionUser` (token verificado com
-  `getClaims`), `requireUser`, `requireMember`, `requireOwner`. Toda página e
+- Neon Auth (Better Auth gerenciado) com e-mail e senha, uma conta por
+  pessoa, vinculada a uma família (`household_members`). Sessão em cookie
+  HTTP-only via `@neon/auth` (`src/lib/auth/server.ts`).
+- `src/proxy.ts`: valida/renova a sessão em toda requisição (middleware do
+  Neon Auth) e redireciona quem não entrou para `/entrar?next=...` (destino
+  validado contra redirecionamento aberto).
+- `src/lib/db/server.ts`: cliente do Data API (PostgREST) com o JWT da
+  sessão; o banco aplica o RLS com `auth.uid()`.
+- `src/server/session.ts` (DAL): `getSessionUser` (sessão do Neon Auth),
+  `requireUser`, `requireMember`, `requireOwner`. Toda página e
   Server Action com dados chama a DAL; o proxy não é a única barreira.
 - O cliente nunca informa `household_id`, papel ou status: vêm da sessão e o
   banco confere de novo (RLS, FKs compostas, funções).
 - Cache Components continua ligado, mas **nenhum dado da família usa
   `use cache`**; leituras de sessão ficam atrás de `<Suspense>` e as respostas
   usam `Cache-Control: private, no-store`.
-- Erros do Supabase são traduzidos (`src/server/errors.ts`); logs registram
+- Erros do Neon Auth e do banco são traduzidos (`src/server/errors.ts`); logs registram
   só o código do erro, sem e-mail, valores ou tokens.
 
 ### Domínio financeiro (Fase 3)
@@ -125,7 +129,7 @@ tests/e2e/               Playwright
   `notification_feed`; nada de conteúdo financeiro guardado nas entregas.
 - Push: `GET /api/cron/notificacoes` (Vercel Cron, `vercel.json`) protegido
   por `CRON_SECRET` (comparação em tempo constante) e excluído do proxy de
-  sessão. Usa `SUPABASE_SECRET_KEY` só ali (`src/lib/supabase/admin.ts`),
+  sessão. Usa `DATABASE_URL` como `service_role` só ali (`src/lib/db/admin.ts`),
   enfileira no banco e envia com `web-push`; 404/410 expiram o aparelho,
   outras falhas tentam de novo até 3 vezes. Sem configuração: 503 com a lista
   do que falta.
@@ -134,7 +138,7 @@ tests/e2e/               Playwright
 ### Qualidade e segurança (Fase 7)
 
 - CSP em todas as páginas (`next.config.ts`): `default-src 'self'`,
-  `connect-src 'self'` (o navegador não fala com o Supabase), `object-src
+  `connect-src 'self'` (o navegador não fala com o Neon), `object-src
   'none'`, `frame-ancestors 'none'`, `form-action 'self'`. Scripts inline
   permitidos porque nonces não funcionam com Partial Prerendering.
 - `createClient()` chama `connection()`: o cliente de Auth lê o relógio, o
@@ -172,7 +176,7 @@ tests/e2e/               Playwright
 | Uma família por conta | Simplifica o app para o caso de uso; restrição removível no banco |
 | Formulários com Server Actions + `useActionState` | Funcionam sem JS pesado; React Hook Form fica para formulários complexos (Fase 3+) |
 | Testes de RLS em PostgreSQL local com réplica do `auth` | Isolados do projeto real e sem Docker |
-| Pilha Supabase local (GoTrue + PostgREST binários) para integração/E2E | Testes com login reais sem tocar o projeto real nem depender de Docker |
+| PostgreSQL + PostgREST locais (réplica do Neon) para integração; E2E numa branch de teste do Neon | Testes sem tocar o projeto real nem depender de Docker; o Neon Auth não tem versão local |
 | Formulários sem React Hook Form | Formulários simples; Server Actions + `useActionState` bastam |
 | Gráficos em HTML/CSS em vez de biblioteca | Poucos tipos de gráfico; acessível (texto e tabela), leve e sem dependência |
 | Saldo registrado calculado no banco (`registered_balance`) | Uma regra só para painel e relatórios, respeitando o RLS |

@@ -629,12 +629,12 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Privilégios
 -- ---------------------------------------------------------------------------
-revoke all on function public.create_installment_plan(text, text, uuid, numeric, integer, date, text, numeric, uuid) from public, anon;
-revoke all on function public.register_installment_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) from public, anon;
-revoke all on function public.cancel_installment_plan(uuid, text) from public, anon;
-revoke all on function public.generate_recurrences() from public, anon;
-revoke all on function public.create_recurrence(text, text, integer, integer, date, date, jsonb, uuid) from public, anon;
-revoke all on function public.stop_recurrence(uuid) from public, anon;
+revoke all on function public.create_installment_plan(text, text, uuid, numeric, integer, date, text, numeric, uuid) from public, anonymous;
+revoke all on function public.register_installment_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) from public, anonymous;
+revoke all on function public.cancel_installment_plan(uuid, text) from public, anonymous;
+revoke all on function public.generate_recurrences() from public, anonymous;
+revoke all on function public.create_recurrence(text, text, integer, integer, date, date, jsonb, uuid) from public, anonymous;
+revoke all on function public.stop_recurrence(uuid) from public, anonymous;
 grant execute on function public.create_installment_plan(text, text, uuid, numeric, integer, date, text, numeric, uuid) to authenticated;
 grant execute on function public.register_installment_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) to authenticated;
 grant execute on function public.cancel_installment_plan(uuid, text) to authenticated;

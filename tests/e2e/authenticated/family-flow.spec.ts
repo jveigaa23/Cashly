@@ -7,7 +7,7 @@ test("cadastro, criação da família, convite e entrada do segundo responsável
   const owner = { email: `dono-${randomUUID()}@exemplo.test`, password: "Senha-segura-1" };
   const invitee = { email: `conv-${randomUUID()}@exemplo.test`, password: "Senha-segura-2" };
 
-  // Cadastro (a pilha local confirma o e-mail automaticamente).
+  // Cadastro (sem confirmação de e-mail no Neon Auth: entra direto).
   await page.goto("/cadastro");
   await page.getByLabel("Seu nome").fill("Dona Ana");
   await page.getByLabel("E-mail").fill(owner.email);

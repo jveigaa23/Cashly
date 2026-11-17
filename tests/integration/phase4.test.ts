@@ -9,7 +9,7 @@ import { clientFor, closeAdminDb, createItUser, type ItUser } from "./helpers";
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const state: { client?: ReturnType<typeof clientFor>; membership?: Membership } = {};
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => state.client }));
+vi.mock("@/lib/db/server", () => ({ createClient: async () => state.client }));
 vi.mock("@/server/session", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/session")>()),
   requireMember: async () => state.membership,

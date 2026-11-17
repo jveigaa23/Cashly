@@ -67,7 +67,7 @@ export async function startPostgres(): Promise<TempPostgres> {
   };
 }
 
-/** Cria um banco com a réplica do Supabase + todas as migrações. */
+/** Cria um banco com a réplica do Neon + todas as migrações. */
 export async function createMigratedDatabase(port: number, name: string): Promise<void> {
   const admin = new Client({ host: "127.0.0.1", port, user: "postgres", database: "postgres" });
   await admin.connect();
@@ -76,8 +76,8 @@ export async function createMigratedDatabase(port: number, name: string): Promis
 
   const db = new Client({ host: "127.0.0.1", port, user: "postgres", database: name });
   await db.connect();
-  const root = join(process.cwd(), "supabase");
-  await db.query(readFileSync(join(root, "tests", "supabase-shim.sql"), "utf8"));
+  const root = join(process.cwd(), "db");
+  await db.query(readFileSync(join(root, "tests", "neon-shim.sql"), "utf8"));
   const migrations = readdirSync(join(root, "migrations")).filter((f) => f.endsWith(".sql")).sort();
   for (const file of migrations) {
     try {
