@@ -7,16 +7,21 @@ import { FormMessage, initialFormState } from "@/components/ui/form-message";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TextField } from "@/components/ui/text-field";
 import { PASSWORD_MIN } from "@/lib/validation/auth";
-import { updatePasswordAction } from "@/server/auth-actions";
+import { changePasswordAction, resetPasswordAction } from "@/server/auth-actions";
 
-export function NewPasswordForm() {
-  const [state, action] = useActionState(updatePasswordAction, initialFormState);
+/**
+ * Duas situações:
+ * - com `token` (veio do link do e-mail): cria a senha sem estar logado;
+ * - sem `token` (Ajustes → Alterar senha): exige a senha atual.
+ */
+export function NewPasswordForm({ token }: { token?: string }) {
+  const [state, action] = useActionState(token ? resetPasswordAction : changePasswordAction, initialFormState);
   if (state.status === "success") {
     return (
       <div className="flex flex-col gap-4">
         <FormMessage state={state} />
-        <Link href="/" className={buttonClasses({ size: "lg" })}>
-          Ir para o início
+        <Link href={token ? "/entrar" : "/"} className={buttonClasses({ size: "lg" })}>
+          {token ? "Entrar" : "Ir para o início"}
         </Link>
       </div>
     );
@@ -24,6 +29,18 @@ export function NewPasswordForm() {
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       <FormMessage state={state} />
+      {token ? (
+        <input type="hidden" name="token" value={token} />
+      ) : (
+        <TextField
+          label="Senha atual"
+          name="currentPassword"
+          type="password"
+          autoComplete="current-password"
+          required
+          errors={state.fieldErrors?.currentPassword}
+        />
+      )}
       <TextField
         label="Nova senha"
         name="password"

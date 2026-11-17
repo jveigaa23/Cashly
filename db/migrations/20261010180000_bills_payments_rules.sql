@@ -19,7 +19,7 @@ language sql
 stable
 set search_path = ''
 as $$
-  select current_user in ('authenticated', 'anon');
+  select current_user in ('authenticated', 'anonymous');
 $$;
 
 -- Categoria precisa ser do tipo certo (despesa/receita). Categoria de outra
@@ -390,10 +390,10 @@ begin
 end;
 $$;
 
-revoke all on function public.register_bill_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) from public, anon;
-revoke all on function public.cancel_bill_payment(uuid, text) from public, anon;
-revoke all on function public.cancel_bill(uuid, text) from public, anon;
-revoke all on function public.cancel_transaction(uuid, text) from public, anon;
+revoke all on function public.register_bill_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) from public, anonymous;
+revoke all on function public.cancel_bill_payment(uuid, text) from public, anonymous;
+revoke all on function public.cancel_bill(uuid, text) from public, anonymous;
+revoke all on function public.cancel_transaction(uuid, text) from public, anonymous;
 grant execute on function public.register_bill_payment(uuid, date, numeric, numeric, uuid, text, text, uuid) to authenticated;
 grant execute on function public.cancel_bill_payment(uuid, text) to authenticated;
 grant execute on function public.cancel_bill(uuid, text) to authenticated;

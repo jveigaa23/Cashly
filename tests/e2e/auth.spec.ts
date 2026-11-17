@@ -33,10 +33,16 @@ test.describe("sem login", () => {
     await expect(page.getByLabel("Senha", { exact: true })).toHaveValue("");
   });
 
-  test("link de e-mail inválido explica o problema", async ({ page }) => {
-    await page.goto("/auth/callback?code=invalido");
-    await expect(page).toHaveURL(/\/entrar\?erro=link$/);
-    await expect(page.getByText("O link não funcionou")).toBeVisible();
+  test("link de nova senha expirado explica o problema", async ({ page }) => {
+    await page.goto("/redefinir-senha?error=INVALID_TOKEN");
+    await expect(page.getByText("Este link de nova senha expirou ou já foi usado.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Pedir novo link" })).toHaveAttribute("href", "/esqueci-senha");
+  });
+
+  test("link de nova senha abre o formulário sem exigir login", async ({ page }) => {
+    await page.goto("/redefinir-senha?token=qualquer");
+    await expect(page.getByLabel("Nova senha")).toBeVisible();
+    await expect(page.getByLabel("Senha atual")).toHaveCount(0);
   });
 
   test("convite sem login orienta a criar conta ou entrar com o mesmo e-mail", async ({ page }) => {

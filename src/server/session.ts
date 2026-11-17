@@ -1,13 +1,15 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { toCalendarDate, type CalendarDate } from "@/lib/format/date";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/auth/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "./errors";
 
 /**
  * Camada de acesso (DAL). Toda página e ação com dados da família passa por
- * aqui: a identidade vem do token verificado (getClaims), nunca do cliente.
+ * aqui: a identidade vem da sessão validada pelo Neon Auth, nunca do cliente.
  */
 
 export interface SessionUser {
@@ -27,14 +29,14 @@ export interface Membership {
 }
 
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) return null;
-  const metadata = (data.claims.user_metadata ?? {}) as { display_name?: unknown };
+  // A sessão depende de cookies: nunca durante a pré-renderização.
+  await connection();
+  const { data, error } = await auth().getSession();
+  if (error || !data?.user?.id) return null;
   return {
-    id: data.claims.sub,
-    email: String(data.claims.email ?? ""),
-    name: typeof metadata.display_name === "string" ? metadata.display_name : "",
+    id: data.user.id,
+    email: String(data.user.email ?? ""),
+    name: typeof data.user.name === "string" ? data.user.name : "",
   };
 });
 
@@ -46,8 +48,8 @@ export async function requireUser(): Promise<SessionUser> {
 
 export const getMembership = cache(async (): Promise<Membership | null> => {
   const user = await requireUser();
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("household_members")
     .select("id, role, display_name, households!inner(id, name, timezone)")
     .eq("user_id", user.id)

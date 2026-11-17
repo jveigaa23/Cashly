@@ -1,13 +1,13 @@
 import "server-only";
 import { describeNotification, type NotificationEvent, type NotificationText } from "@/domain/notifications";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "../errors";
 import { feedRowToFacts } from "./feed";
 
 /** Gera os avisos internos que faltam e devolve quantos não lidos há. null = falhou. */
 export async function refreshNotifications(): Promise<number | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("refresh_notifications");
+  const db = await createClient();
+  const { data, error } = await db.rpc("refresh_notifications");
   if (error) {
     logServerError("refresh_notifications", error);
     return null;
@@ -24,9 +24,9 @@ export interface NotificationItem extends NotificationText {
 
 /** Avisos internos da pessoa: não lidos + lidos dos últimos 30 dias. */
 export async function listNotifications(today: string): Promise<NotificationItem[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("notification_feed")
     .select("*")
     .eq("channel", "in_app")
@@ -57,8 +57,8 @@ export const EVENTS: NotificationEvent[] = ["due_soon", "overdue", "installment"
 
 /** Preferências efetivas (padrão: interno e push ligados, 3 dias). */
 export async function loadPreferences(): Promise<PreferenceRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("notification_preferences").select("channel, event, enabled, days_before");
+  const db = await createClient();
+  const { data, error } = await db.from("notification_preferences").select("channel, event, enabled, days_before");
   if (error) {
     logServerError("loadPreferences", error);
     throw new Error("Não foi possível carregar as preferências de aviso.");
@@ -75,8 +75,8 @@ export async function loadPreferences(): Promise<PreferenceRow[]> {
 }
 
 export async function countDevices(): Promise<number> {
-  const supabase = await createClient();
-  const { count, error } = await supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).is("expired_at", null);
+  const db = await createClient();
+  const { count, error } = await db.from("push_subscriptions").select("id", { count: "exact", head: true }).is("expired_at", null);
   if (error) {
     logServerError("countDevices", error);
     return 0;

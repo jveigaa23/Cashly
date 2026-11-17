@@ -15,7 +15,7 @@ utilizável também no computador.
 | --- | --- | --- |
 | 0 | Inspeção e planejamento — [docs/00-planejamento.md](docs/00-planejamento.md) | Concluída |
 | 1 | Fundação, identidade visual e PWA | Concluída |
-| 2 | Banco de dados, autenticação e segurança (Supabase) | Concluída — pendências de configuração abaixo |
+| 2 | Banco de dados, autenticação e segurança (Neon; migrado do Supabase em 17/11/2026) | Concluída — pendências de configuração abaixo |
 | 3 | Contas, despesas, receitas e pagamentos manuais | Concluída |
 | 4 | Juros, multas, recorrências e parcelas | Concluída |
 | 5 | Dashboard, orçamento, gráficos e relatórios | Concluída |
@@ -34,9 +34,9 @@ vencidas, parcelas, orçamento) e avisos no celular (Web Push), que passam a
 funcionar quando as chaves forem configuradas na hospedagem.
 
 Pendências do responsável (ver [docs/implantacao.md](docs/implantacao.md)):
-URLs de redirecionamento no Supabase (Site URL e `/auth/callback` de
-produção), `SUPABASE_SECRET_KEY` na Vercel (avisos no celular) e, se quiser
-um APK, o pacote do PWABuilder.
+variáveis do Neon na Vercel (`NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET`,
+`NEON_DATA_API_URL` e `DATABASE_URL` para os avisos no celular), domínio
+confiável no Neon Auth e, se quiser um APK, o pacote do PWABuilder.
 
 ## Pré-requisitos
 
@@ -49,7 +49,7 @@ um APK, o pacote do PWABuilder.
 
 ```bash
 pnpm install
-cp .env.example .env.local   # preencha URL e chave publishable do Supabase
+cp .env.example .env.local   # preencha as URLs do Neon Auth e do Data API
 pnpm dev                     # http://localhost:3000
 ```
 
@@ -70,11 +70,10 @@ pnpm build && pnpm start
 | `pnpm typecheck` | Tipos de rotas + `tsc --noEmit` |
 | `pnpm test` | Testes unitários e de componentes (Vitest) |
 | `pnpm test:watch` | Vitest em modo contínuo |
-| `pnpm test:e2e` | Build + Playwright (celular 360 px e desktop) contra a pilha Supabase **local**, com login real; inclui a varredura de qualidade (`tests/e2e/authenticated/quality.spec.ts`: axe WCAG 2.1 AA em claro/escuro, 320/360 px, fonte grande 150%/200%, alvos de toque, CSP e console) |
+| `pnpm test:e2e` | Build + Playwright (celular 360 px e desktop) contra uma **branch de teste do Neon** (`E2E_NEON_AUTH_BASE_URL`, `E2E_NEON_DATA_API_URL`; ver `scripts/e2e-config.ts`), com login real; inclui a varredura de qualidade (`tests/e2e/authenticated/quality.spec.ts`: axe WCAG 2.1 AA em claro/escuro, 320/360 px, fonte grande 150%/200%, alvos de toque, CSP e console) |
 | `pnpm test:db` | Testes de banco/RLS em PostgreSQL temporário e isolado |
-| `pnpm test:integration` | Consultas e ações do servidor via supabase-js + PostgREST real, local |
+| `pnpm test:integration` | Consultas e ações do servidor via postgrest-js + PostgREST real (motor do Data API), local |
 | `pnpm check` | Lint + typecheck + unitários + banco + integração |
-| `pnpm stack:local` | Sobe uma pilha Supabase local (PostgreSQL + Auth + REST) em `http://127.0.0.1:54321` |
 | `pnpm icons` | Regera os ícones a partir do desenho em `scripts/generate-icons.mjs` |
 
 ## Documentação
@@ -83,7 +82,7 @@ pnpm build && pnpm start
 - [Arquitetura](docs/arquitetura.md): estrutura, convenções de dinheiro e datas, decisões.
 - [PWA](docs/pwa.md): manifest, Service Worker, atualização, instalação e limites offline.
 - [Regras financeiras](docs/regras-financeiras.md): situação das contas, pagamentos, multa e juros, parcelas, recorrências e arredondamento.
-- [Supabase](docs/supabase.md): migrações, modelo de segurança, testes do banco, configuração de autenticação, backup.
+- [Banco (Neon)](docs/banco.md): migrações, modelo de segurança, testes do banco, Neon Auth, backup.
 - [Implantação](docs/implantacao.md): Vercel, variáveis, cron, APK (PWABuilder), limites dos planos gratuitos.
 - [Guia dos pais](docs/guia-dos-pais.md): uso do dia a dia, em linguagem simples.
 
@@ -96,14 +95,17 @@ pnpm build && pnpm start
   pequenas; ainda não houve teste com leitor de tela real (TalkBack) nem com
   os pais usando o app.
 
-- Sem SMTP próprio, e-mails de confirmação/recuperação só chegam a membros
-  da equipe do Supabase.
+- E-mails de nova senha saem pelo remetente compartilhado do Neon Auth
+  (`auth@mail.myneon.app`); um remetente próprio é opcional.
+- Contas migradas do Supabase não trouxeram a senha: no primeiro acesso,
+  cada pessoa usa "Esqueci minha senha".
 - Cada conta participa de uma única família.
 - A preferência de tema fica salva no aparelho (`localStorage`), não na conta.
-- Os testes (banco, integração e E2E) rodam numa pilha Supabase local
-  (PostgreSQL 16 + GoTrue + PostgREST); o projeto real usa PostgreSQL 17.
-  Requisitos: PostgreSQL 15+ instalado e acesso a github.com para baixar
-  PostgREST/GoTrue na primeira execução.
+- Os testes de banco e integração rodam localmente (PostgreSQL 15+ e
+  PostgREST, baixado do github.com na primeira vez) com uma réplica do
+  ambiente Neon (`db/tests/neon-shim.sql`); o projeto real usa PostgreSQL 17.
+  Os E2E precisam de uma branch de teste do Neon, porque o Neon Auth não
+  tem versão local.
 - Uma página inexistente dentro do app (ex.: conta de outra família) mostra
   “Página não encontrada”, mas com status HTTP 200 por causa do streaming.
 - Juros compostos (tabela Price) e ajuste de vencimento para dia útil não

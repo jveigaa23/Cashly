@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/form-message";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError, rpcErrorMessage } from "../errors";
 import { requireMember } from "../session";
 import { pushConfig } from "./config";
@@ -17,8 +17,8 @@ function refreshShell() {
 export async function markNotificationReadAction(id: string): Promise<FormState> {
   await requireMember();
   if (!z.uuid().safeParse(id).success) return { status: "error", message: "Aviso inválido." };
-  const supabase = await createClient();
-  const { error } = await supabase.from("notification_deliveries").update({ status: "read", read_at: new Date().toISOString() }).eq("id", id).neq("status", "read");
+  const db = await createClient();
+  const { error } = await db.from("notification_deliveries").update({ status: "read", read_at: new Date().toISOString() }).eq("id", id).neq("status", "read");
   if (error) {
     logServerError("markRead", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -29,8 +29,8 @@ export async function markNotificationReadAction(id: string): Promise<FormState>
 
 export async function markAllReadAction(): Promise<FormState> {
   await requireMember();
-  const supabase = await createClient();
-  const { error } = await supabase
+  const db = await createClient();
+  const { error } = await db
     .from("notification_deliveries")
     .update({ status: "read", read_at: new Date().toISOString() })
     .eq("channel", "in_app")
@@ -60,8 +60,8 @@ export async function savePreferencesAction(_prev: FormState, form: FormData): P
       days_before: days.data,
     })),
   );
-  const supabase = await createClient();
-  const { error } = await supabase.from("notification_preferences").upsert(rows, { onConflict: "member_id,channel,event" });
+  const db = await createClient();
+  const { error } = await db.from("notification_preferences").upsert(rows, { onConflict: "member_id,channel,event" });
   if (error) {
     logServerError("savePreferences", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -82,8 +82,8 @@ export async function registerPushAction(subscription: unknown, userAgent: strin
   await requireMember();
   const parsed = subscriptionSchema.safeParse(subscription);
   if (!parsed.success) return { status: "error", message: "O navegador devolveu uma inscrição inválida. Tente de novo." };
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("register_push_subscription", {
+  const db = await createClient();
+  const { error } = await db.rpc("register_push_subscription", {
     p_endpoint: parsed.data.endpoint,
     p_p256dh: parsed.data.keys.p256dh,
     p_auth: parsed.data.keys.auth,
@@ -100,8 +100,8 @@ export async function registerPushAction(subscription: unknown, userAgent: strin
 export async function unregisterPushAction(endpoint: string): Promise<FormState> {
   await requireMember();
   if (!z.url().safeParse(endpoint).success) return { status: "error", message: "Aparelho inválido." };
-  const supabase = await createClient();
-  const { error } = await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  const db = await createClient();
+  const { error } = await db.from("push_subscriptions").delete().eq("endpoint", endpoint);
   if (error) {
     logServerError("unregisterPush", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -115,8 +115,8 @@ export async function sendTestPushAction(): Promise<FormState> {
   await requireMember();
   const config = pushConfig();
   if (!config) return { status: "error", message: "Os avisos no celular ainda não foram configurados no servidor." };
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("push_subscriptions").select("id, endpoint, p256dh, auth_secret").is("expired_at", null);
+  const db = await createClient();
+  const { data, error } = await db.from("push_subscriptions").select("id, endpoint, p256dh, auth_secret").is("expired_at", null);
   if (error) {
     logServerError("testPush subs", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -130,7 +130,7 @@ export async function sendTestPushAction(): Promise<FormState> {
       config,
     );
     if (r.ok) ok++;
-    else if (r.expired) await supabase.from("push_subscriptions").delete().eq("id", s.id);
+    else if (r.expired) await db.from("push_subscriptions").delete().eq("id", s.id);
   }
   return ok > 0
     ? { status: "success", message: `Aviso de teste enviado para ${ok} ${ok === 1 ? "aparelho" : "aparelhos"}.` }

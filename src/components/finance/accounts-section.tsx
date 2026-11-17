@@ -1,6 +1,6 @@
 import { Card, CardTitle } from "@/components/ui/card";
 import { decimalToCents, formatAmountInput } from "@/lib/format/money";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "@/server/errors";
 import { requireMember } from "@/server/session";
 import { AccountForm } from "./account-form";
@@ -8,8 +8,8 @@ import { AccountForm } from "./account-form";
 /** Contas de registro (carteira, banco…) e seu saldo inicial, base do "Saldo registrado". */
 export async function AccountsSection() {
   await requireMember();
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("accounts")
     .select("id, name, opening_balance::text, opening_date")
     .is("archived_at", null)

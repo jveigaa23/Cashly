@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/form-message";
 import { publicEnv } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { acceptInviteSchema, createHouseholdSchema, fieldErrors, inviteSchema } from "@/lib/validation/auth";
 import { logServerError, rpcErrorMessage } from "./errors";
 import { getMembership, requireOwner, requireUser } from "./session";
@@ -22,8 +22,8 @@ export async function createHouseholdAction(_prev: FormState, form: FormData): P
     return { status: "error", message: "Confira os campos destacados.", fieldErrors: fieldErrors(parsed.error), values };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("create_household", {
+  const db = await createClient();
+  const { error } = await db.rpc("create_household", {
     p_name: parsed.data.householdName,
     p_display_name: parsed.data.displayName,
   });
@@ -44,8 +44,8 @@ export async function createInviteAction(_prev: InviteState, form: FormData): Pr
     return { status: "error", message: "Confira o e-mail.", fieldErrors: fieldErrors(parsed.error), values: { email: text(form, "email") } };
   }
 
-  const supabase = await createClient();
-  const { data: token, error } = await supabase.rpc("create_household_invite", { p_email: parsed.data.email });
+  const db = await createClient();
+  const { data: token, error } = await db.rpc("create_household_invite", { p_email: parsed.data.email });
   if (error || !token) {
     logServerError("create_household_invite", error);
     return { status: "error", message: rpcErrorMessage(error), values: { email: parsed.data.email } };
@@ -64,8 +64,8 @@ export async function revokeInviteAction(form: FormData): Promise<void> {
   await requireOwner();
   const id = z.uuid().safeParse(text(form, "inviteId"));
   if (!id.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("revoke_household_invite", { p_invite_id: id.data });
+  const db = await createClient();
+  const { error } = await db.rpc("revoke_household_invite", { p_invite_id: id.data });
   if (error) logServerError("revoke_household_invite", error);
   revalidatePath("/ajustes");
 }
@@ -84,8 +84,8 @@ export async function acceptInviteAction(_prev: FormState, form: FormData): Prom
     };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("accept_household_invite", {
+  const db = await createClient();
+  const { error } = await db.rpc("accept_household_invite", {
     p_token: parsed.data.token,
     p_display_name: parsed.data.displayName,
   });

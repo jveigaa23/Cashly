@@ -1,5 +1,5 @@
 import type { NotificationFacts } from "@/domain/notifications";
-import type { Database } from "@/lib/supabase/database.types";
+import type { Database } from "@/lib/db/database.types";
 
 export type FeedRow = Database["public"]["Views"]["notification_feed"]["Row"];
 

@@ -76,7 +76,7 @@ alter table public.notification_deliveries enable row level security;
 alter table public.push_subscriptions enable row level security;
 
 revoke all on table public.notification_preferences, public.notification_deliveries,
-  public.push_subscriptions from anon, authenticated;
+  public.push_subscriptions from anonymous, authenticated;
 
 -- Preferências: cada pessoa gerencia as suas.
 grant select, insert, update on table public.notification_preferences to authenticated;
@@ -120,7 +120,7 @@ create table public.audit_log (
   entity text not null,
   entity_id uuid not null,
   action text not null check (action in ('insert', 'update')),
-  actor_id uuid references auth.users (id) on delete set null,
+  actor_id uuid references neon_auth."user" (id) on delete set null,
   changes jsonb not null,
   at timestamptz not null default now()
 );
@@ -179,7 +179,7 @@ end;
 $$;
 
 alter table public.audit_log enable row level security;
-revoke all on table public.audit_log from anon, authenticated;
+revoke all on table public.audit_log from anonymous, authenticated;
 grant select on table public.audit_log to authenticated;
 create policy "membros leem o histórico" on public.audit_log
   for select to authenticated

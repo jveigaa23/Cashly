@@ -1,7 +1,7 @@
 import { Card, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDateTime } from "@/lib/format/date";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { logServerError } from "@/server/errors";
 import { revokeInviteAction } from "@/server/household-actions";
 import { requireMember } from "@/server/session";
@@ -9,13 +9,13 @@ import { InviteForm } from "./invite-form";
 
 export async function FamilySection() {
   const membership = await requireMember();
-  const supabase = await createClient();
+  const db = await createClient();
   const isOwner = membership.role === "owner";
 
   const [members, invites] = await Promise.all([
-    supabase.from("household_members").select("id, display_name, role").order("created_at"),
+    db.from("household_members").select("id, display_name, role").order("created_at"),
     isOwner
-      ? supabase
+      ? db
           .from("household_invites")
           .select("id, email, expires_at")
           .is("accepted_at", null)

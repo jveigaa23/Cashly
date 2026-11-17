@@ -248,7 +248,7 @@ left join public.budgets bu
 left join public.categories c
   on c.household_id = bu.household_id and c.id = bu.category_id;
 
-revoke all on table public.notification_feed from public, anon, authenticated;
+revoke all on table public.notification_feed from public, anonymous, authenticated;
 grant select on table public.notification_feed to authenticated, service_role;
 
 -- Agendador: envio e expiração (service_role ignora RLS, mas precisa de grant).
@@ -257,9 +257,9 @@ grant select, update on table public.push_subscriptions to service_role;
 
 revoke all on function private.notification_candidates(uuid, uuid, text, date) from public;
 revoke all on function private.refresh_in_app(uuid, uuid, date) from public;
-revoke all on function public.refresh_notifications() from public, anon;
-revoke all on function public.register_push_subscription(text, text, text, text) from public, anon;
-revoke all on function public.enqueue_push_notifications(timestamptz) from public, anon, authenticated;
+revoke all on function public.refresh_notifications() from public, anonymous;
+revoke all on function public.register_push_subscription(text, text, text, text) from public, anonymous;
+revoke all on function public.enqueue_push_notifications(timestamptz) from public, anonymous, authenticated;
 grant execute on function public.refresh_notifications() to authenticated;
 grant execute on function public.register_push_subscription(text, text, text, text) to authenticated;
 grant execute on function public.enqueue_push_notifications(timestamptz) to service_role;

@@ -1,11 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { LOCAL_ANON_KEY, LOCAL_SUPABASE_URL } from "../../../scripts/local-stack-config.ts";
+import { e2eNeon } from "../../../scripts/e2e-config.ts";
 import { createAccount, signIn, type Account } from "./session";
 
 /**
- * Varredura de qualidade (Fase 7) em todas as telas, com dados reais da pilha
- * local: acessibilidade (axe, WCAG 2.1 AA), claro e escuro, sem rolagem
+ * Varredura de qualidade (Fase 7) em todas as telas, com dados reais da branch
+ * de teste do Neon: acessibilidade (axe, WCAG 2.1 AA), claro e escuro, sem rolagem
  * horizontal em 360 e 320 px, alvos de toque >= 44 px, sem violações de CSP
  * e sem erros no console.
  */
@@ -18,9 +18,9 @@ const plus = (d: number) => {
 };
 
 async function rest(account: Account, path: string, body?: unknown, method = body ? "POST" : "GET") {
-  const res = await fetch(`${LOCAL_SUPABASE_URL}/rest/v1/${path}`, {
+  const res = await fetch(`${e2eNeon().dataApiUrl}/${path}`, {
     method,
-    headers: { apikey: LOCAL_ANON_KEY, Authorization: `Bearer ${account.token}`, "Content-Type": "application/json", Prefer: "return=representation" },
+    headers: { Authorization: `Bearer ${account.token}`, "Content-Type": "application/json", Prefer: "return=representation" },
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);

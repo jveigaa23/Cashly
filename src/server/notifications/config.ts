@@ -26,7 +26,7 @@ export function pushConfig(env: Env = process.env): PushConfig | null {
 export function schedulerMissing(env: Env = process.env): string[] {
   const missing: string[] = [];
   if (!env.CRON_SECRET || env.CRON_SECRET.length < 32) missing.push("CRON_SECRET");
-  if (!env.SUPABASE_SECRET_KEY) missing.push("SUPABASE_SECRET_KEY");
+  if (!env.DATABASE_URL) missing.push("DATABASE_URL");
   if (!pushConfig(env)) missing.push("NEXT_PUBLIC_VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT");
   return missing;
 }

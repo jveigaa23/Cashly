@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authorizeCron } from "@/server/notifications/cron-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/db/admin";
 import { pushConfig, schedulerMissing } from "@/server/notifications/config";
 import { dispatchPush } from "@/server/notifications/dispatch";
 

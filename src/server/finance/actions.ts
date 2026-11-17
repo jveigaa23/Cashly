@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/form-message";
 import { checkPayment } from "@/domain/bills";
-import { dbMoney, dbRate } from "@/lib/supabase/money";
-import { createClient } from "@/lib/supabase/server";
+import { dbMoney, dbRate } from "@/lib/db/money";
+import { createClient } from "@/lib/db/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { billSchema, cancelSchema, paymentSchema, planSchema, transactionSchema } from "@/lib/validation/finance";
 import { logServerError, rpcErrorMessage } from "../errors";
@@ -65,11 +65,11 @@ export async function createBillAction(_prev: FormState, form: FormData): Promis
   if (!parsed.success) return invalid(parsed.error, v);
 
   const b = parsed.data;
-  const supabase = await createClient();
+  const db = await createClient();
 
   if (b.repeat) {
     const charges = chargeColumns(b);
-    const { error } = await supabase.rpc("create_recurrence", {
+    const { error } = await db.rpc("create_recurrence", {
       p_target: "bill",
       p_frequency: b.repeat,
       p_interval: 1,
@@ -93,7 +93,7 @@ export async function createBillAction(_prev: FormState, form: FormData): Promis
     redirect("/contas?ver=open&recorrente=1");
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("bills")
     .insert({
       household_id: membership.householdId,
@@ -114,8 +114,8 @@ export async function createBillAction(_prev: FormState, form: FormData): Promis
 
 export async function stopRecurrenceAction(billId: string, ruleId: string): Promise<FormState> {
   await requireMember();
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("stop_recurrence", { p_rule_id: ruleId });
+  const db = await createClient();
+  const { error } = await db.rpc("stop_recurrence", { p_rule_id: ruleId });
   if (error) return dbError("stopRecurrence", error);
   revalidatePath("/contas");
   redirect(`/contas/${billId}?repeticao-encerrada=1`);
@@ -128,8 +128,8 @@ export async function updateBillAction(billId: string, _prev: FormState, form: F
   const parsed = billSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("bills")
     .update({
       name: parsed.data.name,
@@ -174,8 +174,8 @@ export async function payBillAction(billId: string, _prev: FormState, form: Form
       : { status: "error", message: "Confira os campos destacados.", fieldErrors: { [check.field]: [check.error] }, values: v };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("register_bill_payment", {
+  const db = await createClient();
+  const { error } = await db.rpc("register_bill_payment", {
     p_bill_id: billId,
     p_paid_on: parsed.data.paidOn,
     p_amount: dbMoney(parsed.data.amount),
@@ -198,8 +198,8 @@ export async function cancelBillAction(billId: string, _prev: FormState, form: F
   const parsed = cancelSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_bill", { p_bill_id: billId, p_reason: parsed.data.reason });
+  const db = await createClient();
+  const { error } = await db.rpc("cancel_bill", { p_bill_id: billId, p_reason: parsed.data.reason });
   if (error) return dbError("cancelBill", error, v);
 
   revalidatePath("/contas");
@@ -217,8 +217,8 @@ export async function cancelPaymentAction(
   const parsed = cancelSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_bill_payment", { p_payment_id: paymentId, p_reason: parsed.data.reason });
+  const db = await createClient();
+  const { error } = await db.rpc("cancel_bill_payment", { p_payment_id: paymentId, p_reason: parsed.data.reason });
   if (error) return dbError("cancelPayment", error, v);
 
   revalidatePath("/contas");
@@ -242,11 +242,11 @@ export async function createTransactionAction(_prev: FormState, form: FormData):
   if (!parsed.success) return invalid(parsed.error, v);
   const t = parsed.data;
   const isExpense = t.type === "expense";
-  const supabase = await createClient();
+  const db = await createClient();
 
   if (t.repeatMonthly) {
     // Repetidos nascem como PREVISTOS; a pessoa confirma quando acontecer.
-    const { error } = await supabase.rpc("create_recurrence", {
+    const { error } = await db.rpc("create_recurrence", {
       p_target: t.type,
       p_frequency: "monthly",
       p_interval: 1,
@@ -261,7 +261,7 @@ export async function createTransactionAction(_prev: FormState, form: FormData):
     redirect(`/lancamentos?mes=${t.occurredOn.slice(0, 7)}&tipo=${t.type}&salvo=recorrente`);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("transactions")
     .insert({
       household_id: membership.householdId,
@@ -283,7 +283,7 @@ export async function createTransactionAction(_prev: FormState, form: FormData):
   let id = data?.id;
   if (error?.code === "23505") {
     // Mesmo formulário enviado de novo: o lançamento já existe.
-    const existing = await supabase.from("transactions").select("id").eq("request_id", t.requestId).maybeSingle();
+    const existing = await db.from("transactions").select("id").eq("request_id", t.requestId).maybeSingle();
     if (existing.error || !existing.data) return dbError("createTransaction retry", existing.error ?? error, v);
     id = existing.data.id;
   } else if (error) {
@@ -321,8 +321,8 @@ export async function updateTransactionAction(txId: string, _prev: FormState, fo
         nature: isExpense ? t.nature : null,
       };
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("transactions").update(changes).eq("id", txId).select("id");
+  const db = await createClient();
+  const { data, error } = await db.from("transactions").update(changes).eq("id", txId).select("id");
   if (error) return dbError("updateTransaction", error, v);
   if (data.length === 0) return { status: "error", message: rpcErrorMessage({ message: "not_found" }), values: v };
 
@@ -336,8 +336,8 @@ export async function cancelTransactionAction(txId: string, _prev: FormState, fo
   const parsed = cancelSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_transaction", { p_transaction_id: txId, p_reason: parsed.data.reason });
+  const db = await createClient();
+  const { error } = await db.rpc("cancel_transaction", { p_transaction_id: txId, p_reason: parsed.data.reason });
   if (error) return dbError("cancelTransaction", error, v);
 
   revalidatePath("/lancamentos");
@@ -357,8 +357,8 @@ export async function createPlanAction(_prev: FormState, form: FormData): Promis
   if (!parsed.success) return invalid(parsed.error, v);
   const p = parsed.data;
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_installment_plan", {
+  const db = await createClient();
+  const { data, error } = await db.rpc("create_installment_plan", {
     p_kind: p.kind,
     p_description: p.description,
     p_category_id: p.categoryId,
@@ -399,8 +399,8 @@ export async function payInstallmentAction(planId: string, installmentId: string
       : { status: "error", message: "Confira os campos destacados.", fieldErrors: { [check.field]: [check.error] }, values: v };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("register_installment_payment", {
+  const db = await createClient();
+  const { error } = await db.rpc("register_installment_payment", {
     p_installment_id: installmentId,
     p_paid_on: parsed.data.paidOn,
     p_amount: dbMoney(parsed.data.amount),
@@ -421,8 +421,8 @@ export async function cancelInstallmentPaymentAction(planId: string, paymentId: 
   const v = values(form, ["reason"]);
   const parsed = cancelSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_bill_payment", { p_payment_id: paymentId, p_reason: parsed.data.reason });
+  const db = await createClient();
+  const { error } = await db.rpc("cancel_bill_payment", { p_payment_id: paymentId, p_reason: parsed.data.reason });
   if (error) return dbError("cancelInstallmentPayment", error, v);
   revalidatePath("/parcelas");
   revalidatePath("/lancamentos");
@@ -434,8 +434,8 @@ export async function cancelPlanAction(planId: string, _prev: FormState, form: F
   const v = values(form, ["reason"]);
   const parsed = cancelSchema.safeParse(v);
   if (!parsed.success) return invalid(parsed.error, v);
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_installment_plan", { p_plan_id: planId, p_reason: parsed.data.reason });
+  const db = await createClient();
+  const { error } = await db.rpc("cancel_installment_plan", { p_plan_id: planId, p_reason: parsed.data.reason });
   if (error) return dbError("cancelPlan", error, v);
   revalidatePath("/parcelas");
   redirect(`/parcelas/${planId}?cancelado=1`);

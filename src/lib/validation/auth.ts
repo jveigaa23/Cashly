@@ -47,6 +47,21 @@ export const newPasswordSchema = z
     message: "As senhas não são iguais.",
   });
 
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string({ error: "Informe a senha atual." }).min(1, "Informe a senha atual."),
+    password: newPassword,
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "As senhas não são iguais.",
+  })
+  .refine((d) => d.password !== d.currentPassword, {
+    path: ["password"],
+    message: "A nova senha precisa ser diferente da atual.",
+  });
+
 export const createHouseholdSchema = z.object({
   householdName: z
     .string()

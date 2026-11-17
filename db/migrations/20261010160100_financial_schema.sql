@@ -22,7 +22,7 @@ create table public.accounts (
   opening_balance numeric(14, 2) not null default 0,
   opening_date date not null default current_date,
   archived_at timestamptz,
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id)
@@ -39,7 +39,7 @@ create table public.categories (
   name text not null check (char_length(btrim(name)) between 1 and 40),
   kind text not null check (kind in ('income', 'expense')),
   archived_at timestamptz,
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -64,7 +64,7 @@ create table public.recurrence_rules (
   -- Modelo validado no servidor (Zod) antes de gravar.
   template jsonb not null default '{}'::jsonb check (jsonb_typeof(template) = 'object'),
   active boolean not null default true,
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -93,7 +93,7 @@ create table public.bills (
   recurrence_date date,
   canceled_at timestamptz,
   cancel_reason text check (char_length(cancel_reason) <= 300),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -127,7 +127,7 @@ create table public.installment_plans (
   status text not null default 'active' check (status in ('active', 'finished', 'canceled')),
   canceled_at timestamptz,
   cancel_reason text check (char_length(cancel_reason) <= 300),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -146,7 +146,7 @@ create table public.installments (
   expected_amount numeric(14, 2) not null check (expected_amount > 0),
   status text not null default 'pending'
     check (status in ('pending', 'partially_paid', 'paid', 'canceled')),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -172,7 +172,7 @@ create table public.bill_payments (
   note text check (char_length(note) <= 300),
   canceled_at timestamptz,
   cancel_reason text check (char_length(cancel_reason) <= 300),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -210,7 +210,7 @@ create table public.transactions (
   recurrence_date date,
   canceled_at timestamptz,
   cancel_reason text check (char_length(cancel_reason) <= 300),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -238,7 +238,7 @@ create table public.budgets (
   category_kind text not null default 'expense' check (category_kind = 'expense'),
   limit_amount numeric(14, 2) not null check (limit_amount > 0),
   alert_percent integer not null default 80 check (alert_percent between 1 and 100),
-  created_by uuid references auth.users (id) on delete set null,
+  created_by uuid references neon_auth."user" (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (household_id, id),
@@ -282,7 +282,7 @@ begin
     'installments', 'bill_payments', 'transactions', 'budgets'
   ] loop
     execute format('alter table public.%I enable row level security', t);
-    execute format('revoke all on table public.%I from anon, authenticated', t);
+    execute format('revoke all on table public.%I from anonymous, authenticated', t);
     execute format('grant select, insert, update on table public.%I to authenticated', t);
     execute format(
       'create policy "membros leem" on public.%I for select to authenticated

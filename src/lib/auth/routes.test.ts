@@ -2,18 +2,18 @@ import { describe, expect, it } from "vitest";
 import { isGuestOnlyPath, isPublicPath, safeNextPath } from "./routes";
 
 describe("rotas públicas", () => {
-  it.each(["/entrar", "/cadastro", "/esqueci-senha", "/auth/callback", "/convite/abc"])("%s é pública", (p) => {
+  it.each(["/entrar", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/convite/abc"])("%s é pública", (p) => {
     expect(isPublicPath(p)).toBe(true);
   });
 
-  it.each(["/", "/contas", "/ajustes", "/entrarx", "/convites", "/bem-vindo", "/redefinir-senha"])(
+  it.each(["/", "/contas", "/ajustes", "/entrarx", "/convites", "/bem-vindo", "/auth/callback"])(
     "%s exige login",
     (p) => expect(isPublicPath(p)).toBe(false),
   );
 
-  it("convite e callback não são 'só para visitantes'", () => {
+  it("convite e nova senha não são 'só para visitantes'", () => {
     expect(isGuestOnlyPath("/convite/abc")).toBe(false);
-    expect(isGuestOnlyPath("/auth/callback")).toBe(false);
+    expect(isGuestOnlyPath("/redefinir-senha")).toBe(false);
     expect(isGuestOnlyPath("/entrar")).toBe(true);
   });
 });

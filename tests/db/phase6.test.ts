@@ -191,9 +191,9 @@ describe("push", () => {
     await db.query("delete from bills");
   });
 
-  it("só o service_role chama o agendador; anon não acessa nada", async () => {
+  it("só o service_role chama o agendador; anonymous não acessa nada", async () => {
     await expect(run("select public.enqueue_push_notifications()")).rejects.toThrow(/permission denied/);
-    await expect(as(db, "anon", (q) => q("select public.refresh_notifications()"))).rejects.toThrow(/permission denied/);
-    await expect(as(db, "anon", (q) => q("select * from notification_feed"))).rejects.toThrow(/permission denied/);
+    await expect(as(db, "anonymous", (q) => q("select public.refresh_notifications()"))).rejects.toThrow(/permission denied/);
+    await expect(as(db, "anonymous", (q) => q("select * from notification_feed"))).rejects.toThrow(/permission denied/);
   });
 });

@@ -41,17 +41,17 @@ export async function createTestDatabase(): Promise<{
 
 export async function createUser(db: Client, email = `${randomUUID()}@exemplo.test`): Promise<TestUser> {
   const { rows } = await db.query<{ id: string }>(
-    "insert into auth.users (email) values ($1) returning id",
+    'insert into neon_auth."user" (email) values ($1) returning id',
     [email],
   );
   return { id: rows[0].id, email };
 }
 
-type Role = { user: TestUser } | "anon" | "service_role";
+type Role = { user: TestUser } | "anonymous" | "service_role";
 
 /**
- * Executa `fn` como faria a API do Supabase: papel `authenticated` com as
- * claims do JWT do usuário, `anon` sem login, ou `service_role`.
+ * Executa `fn` como faria o Data API do Neon: papel `authenticated` com as
+ * claims do JWT do usuário, `anonymous` sem login, ou `service_role`.
  * Tudo dentro de uma transação desfeita ao final (ou mantida com commit: true).
  */
 export async function as<T>(
@@ -62,9 +62,9 @@ export async function as<T>(
 ): Promise<T> {
   await db.query("begin");
   try {
-    if (role === "anon") {
-      await db.query("set local role anon");
-      await db.query(`select set_config('request.jwt.claims', '{"role":"anon"}', true)`);
+    if (role === "anonymous") {
+      await db.query("set local role anonymous");
+      await db.query(`select set_config('request.jwt.claims', '{"role":"anonymous"}', true)`);
     } else if (role === "service_role") {
       await db.query("set local role service_role");
       await db.query(`select set_config('request.jwt.claims', '{"role":"service_role"}', true)`);

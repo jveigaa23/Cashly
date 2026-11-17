@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/form-message";
 import { addMonths } from "@/lib/format/date";
-import { dbMoney } from "@/lib/supabase/money";
-import { createClient } from "@/lib/supabase/server";
+import { dbMoney } from "@/lib/db/money";
+import { createClient } from "@/lib/db/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { accountSchema, budgetSchema } from "@/lib/validation/finance";
 import { logServerError, rpcErrorMessage } from "../errors";
@@ -23,8 +23,8 @@ export async function saveBudgetAction(_prev: FormState, form: FormData): Promis
   if (!parsed.success) return { status: "error", message: "Confira os campos destacados.", fieldErrors: fieldErrors(parsed.error), values: v };
   const b = parsed.data;
 
-  const supabase = await createClient();
-  let existing = supabase.from("budgets").select("id").eq("month", `${b.month}-01`);
+  const db = await createClient();
+  let existing = db.from("budgets").select("id").eq("month", `${b.month}-01`);
   existing = b.categoryId ? existing.eq("category_id", b.categoryId) : existing.is("category_id", null);
   const found = await existing.maybeSingle();
   if (found.error) {
@@ -33,8 +33,8 @@ export async function saveBudgetAction(_prev: FormState, form: FormData): Promis
   }
 
   const { error } = found.data
-    ? await supabase.from("budgets").update({ limit_amount: dbMoney(b.limit), alert_percent: b.alertPercent }).eq("id", found.data.id)
-    : await supabase.from("budgets").insert({
+    ? await db.from("budgets").update({ limit_amount: dbMoney(b.limit), alert_percent: b.alertPercent }).eq("id", found.data.id)
+    : await db.from("budgets").insert({
         household_id: membership.householdId,
         month: `${b.month}-01`,
         category_id: b.categoryId,
@@ -55,8 +55,8 @@ export async function removeBudgetAction(budgetId: string, month: string): Promi
   if (!z.uuid().safeParse(budgetId).success || !z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).safeParse(month).success) {
     return { status: "error", message: rpcErrorMessage({ message: "not_found" }) };
   }
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("budgets").delete().eq("id", budgetId).select("id");
+  const db = await createClient();
+  const { data, error } = await db.from("budgets").delete().eq("id", budgetId).select("id");
   if (error) {
     logServerError("removeBudget", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -71,10 +71,10 @@ export async function removeBudgetAction(budgetId: string, month: string): Promi
 export async function copyPreviousBudgetsAction(month: string): Promise<FormState> {
   const membership = await requireMember();
   if (!z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).safeParse(month).success) return { status: "error", message: "Mês inválido." };
-  const supabase = await createClient();
+  const db = await createClient();
   const [prev, current] = await Promise.all([
-    supabase.from("budgets").select("category_id, limit_amount::text, alert_percent").eq("month", `${addMonths(month, -1)}-01`),
-    supabase.from("budgets").select("category_id").eq("month", `${month}-01`),
+    db.from("budgets").select("category_id, limit_amount::text, alert_percent").eq("month", `${addMonths(month, -1)}-01`),
+    db.from("budgets").select("category_id").eq("month", `${month}-01`),
   ]);
   if (prev.error || current.error) {
     logServerError("copyBudgets", prev.error ?? current.error);
@@ -91,7 +91,7 @@ export async function copyPreviousBudgetsAction(month: string): Promise<FormStat
       alert_percent: b.alert_percent,
     }));
   if (rows.length === 0) return { status: "error", message: "Não há limites do mês anterior para copiar." };
-  const { error } = await supabase.from("budgets").insert(rows);
+  const { error } = await db.from("budgets").insert(rows);
   if (error) {
     logServerError("copyBudgets insert", error);
     return { status: "error", message: rpcErrorMessage(error) };
@@ -107,8 +107,8 @@ export async function updateAccountAction(accountId: string, _prev: FormState, f
   const parsed = accountSchema.safeParse(v);
   if (!parsed.success) return { status: "error", message: "Confira os campos destacados.", fieldErrors: fieldErrors(parsed.error), values: v };
   const a = parsed.data;
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("accounts")
     .update({ name: a.name, opening_balance: dbMoney(a.openingBalance), opening_date: a.openingDate })
     .eq("id", accountId)
